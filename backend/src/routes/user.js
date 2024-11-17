@@ -8,43 +8,98 @@ const userData = [
     { name: "user3", id: "test3", pw: "test3333", age: 40, gender: "M", phone: "010-3333-3333", email: "test3@gmail.com", address: "Canada" }
 ];
 
+// router.post("",(req,res) => {
+//     const nameRegex = /^[a-zA-Z가-힣0-9]{2,20}$/; //영어,한글 가능 2-20글자
+//     const idRegex = /^[a-zA-Z0-9]{2,20}$/; // 영어, 숫자 가능 2-20글자
+//     const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&]?).{8,16}$/; //영어 숫자 필수, 특수문자 옵션, 8-16글자
+//     const ageRegex = /^[0-9]{1,2}$/;
+//     const genderRegex = /^(M|F)$/; //M, F 만 가능;
+//     const phoneRegex = /^010-[0-9]{4}-[0-9]{4}$/; // 010-xxxx-xxxx 가능
+//     const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+//     const addressRegex = /^[A-Z][a-z]{1,}$/;
+//     try{
+//         const {name,id,pw,age,gender,phone,email,address} = req.body
+//         if(!name||!id||!pw||!age||!gender||!phone||!email||!address)
+//             {throw customError("모든 값을 입력해주십시오",400)}
+        
+//         for(let i = 0 ; i < req.body.length; i++){
+//             checkValid()
+
+//         }
+
+//         if(!nameRegex.test(name))throw customError("이름이 올바르지 않습니다.",400)
+//         const checkName = userData.filter((data) => data.name === name );
+//         if(checkName.length > 0)throw customError("해당 정보로 가입된 계정이 존재합니다.",409)
+
+//         if(!idRegex.test(id))throw customError("아이디가 올바르지 않습니다.",400)
+//         const checkId= userData.filter((data) => data.id === id);
+//         if(checkId.length > 0)throw customError("중복된 ID 입니다.",409)
+            
+//         if(!pwRegex.test(pw))throw customError("비밀번호가 올바르지 않습니다.",400)
+//         if(!ageRegex.test(age))throw customError("나이가 올바르지 않습니다.",400)
+//         if(!genderRegex.test(gender))throw customError("성별이 올바르지 않습니다.",400)
+//         if(!phoneRegex.test(phone))throw customError("전화번호가 올바르지 않습니다.",400)
+
+//         if(!emailRegex.test(email))throw customError("이메일주소가 올바르지 않습니다.",400)
+//         const checkEmail = userData.filter((data) => data.email === email)
+//         if(checkEmail.length > 0)throw customError("이미 가입된 email주소입니다.",409)
+        
+//         if(!addressRegex.test(address))throw customError("주소가 올바르지 않습니다.",400)
+        
+//         return res.status(200).send({
+//             "message": "계정이 생성되었습니다."
+//         })
+
+
+//     }catch(err){
+//         res.status(err.statusCode || 500).send({
+//             "message": err.message
+//         })
+//     }
+// })
+
 router.post("",(req,res) => {
-    const nameRegex = /^[a-zA-Z가-힣0-9]{2,20}$/; //영어,한글 가능 2-20글자
-    const idRegex = /^[a-zA-Z0-9]{2,20}$/; // 영어, 숫자 가능 2-20글자
-    const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&]?).{8,16}$/; //영어 숫자 필수, 특수문자 옵션, 8-16글자
-    const ageRegex = /^[0-9]{1,2}$/;
-    const genderRegex = /^(M|F)$/; //M, F 만 가능;
-    const phoneRegex = /^010-[0-9]{4}-[0-9]{4}$/; // 010-xxxx-xxxx 가능
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const addressRegex = /^[A-Z][a-z]{1,}$/;
+    // 정규표현식
+    const regex = {
+        nameRegex :/^[a-zA-Z가-힣0-9]{2,20}$/, //영어,한글 가능 2-20글자
+        idRegex : /^[a-zA-Z0-9]{2,20}$/, // 영어, 숫자 가능 2-20글자
+        pwRegex : /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&]?).{8,16}$/, //영어 숫자 필수, 특수문자 옵션, 8-16글자
+        ageRegex : /^[0-9]{1,2}$/,
+        genderRegex : /^(M|F)$/, //M, F 만 가능;
+        phoneRegex : /^010-[0-9]{4}-[0-9]{4}$/, // 010-xxxx-xxxx 가능
+        emailRegex : /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+        addressRegex : /^[A-Z][a-z]{1,}$/
+    }
     
+    const reqType =["name","id","pw","age","gender","phone","email","address"]
+
+    //유효성 검사
+    let checkValid = (type, inputValue) => {
+        const dynamicRegex = regex[`${type}Regex`]
+        if(!dynamicRegex.test(inputValue))throw customError(`${type}이 올바르지 않습니다.`,400)
+        if(type === "id" || type === "name" || type === "email"){
+            const checkinputedValue = userData.filter((data) => data[type] === inputValue);
+            if(checkinputedValue.length > 0){
+                if(type === "id"){
+                    throw customError("중복된 ID 입니다.",409)
+                }else{
+                    throw customError("해당정보로 가입된 계정이 존재합니다.",409)
+                }
+            }
+        }
+    }
+    
+
+    // Router
     try{
         const {name,id,pw,age,gender,phone,email,address} = req.body
         if(!name||!id||!pw||!age||!gender||!phone||!email||!address)
             {throw customError("모든 값을 입력해주십시오",400)}
         
-        
+        reqType.forEach((elem,) => {
+            checkValid(elem,req.body[elem])
+        })
 
-
-        if(!nameRegex.test(name))throw customError("이름이 올바르지 않습니다.",400)
-        const checkName = userData.filter((data) => data.name === name );
-        if(checkName.length > 0)throw customError("해당 정보로 가입된 계정이 존재합니다.",409)
-
-        if(!idRegex.test(id))throw customError("아이디가 올바르지 않습니다.",400)
-        const checkId= userData.filter((data) => data.id === id);
-        if(checkId.length > 0)throw customError("중복된 ID 입니다.",409)
-            
-        if(!pwRegex.test(pw))throw customError("비밀번호가 올바르지 않습니다.",400)
-        if(!ageRegex.test(age))throw customError("나이가 올바르지 않습니다.",400)
-        if(!genderRegex.test(gender))throw customError("성별이 올바르지 않습니다.",400)
-        if(!phoneRegex.test(phone))throw customError("전화번호가 올바르지 않습니다.",400)
-
-        if(!emailRegex.test(email))throw customError("이메일주소가 올바르지 않습니다.",400)
-        const checkEmail = userData.filter((data) => data.email === email)
-        if(checkEmail.length > 0)throw customError("이미 가입된 email주소입니다.",409)
-        
-        if(!addressRegex.test(address))throw customError("주소가 올바르지 않습니다.",400)
-        
         return res.status(200).send({
             "message": "계정이 생성되었습니다."
         })
@@ -55,342 +110,10 @@ router.post("",(req,res) => {
             "message": err.message
         })
     }
+
+    
+                
 })
 
 
 module.exports = router;
-
-
-// const userData = [
-//     { name: "user1", id: "test1", pw: "test1111", age: 20, gender: "M", phone: "010-1111-1111", email: "test1@gmail.com", address: "Korea" },
-//     { name: "user2", id: "test2", pw: "test2222", age: 30, gender: "F", phone: "010-2222-2222", email: "test2@gmail.com", address: "Japan" },
-//     { name: "user3", id: "test3", pw: "test3333", age: 40, gender: "M", phone: "010-3333-3333", email: "test3@gmail.com", address: "Canada" }
-// ];
-
-
-
-
-// // 1. 로그인 CURD
-
-// // INSERT INTO user (name, id, pw, age, gender, phone, email, address) VALUES ('name','id','pw','age','gender','phone#','email','address');
-// //Create
-
-// app.post("/user", (req, res) => {
-//     const { name, id, pw, age, gender, phone, email, address } = req.body;
-    
-//     // 필수 항목이 모두 입력되었는지 확인
-//     if (!name || !id || !pw || !age || !gender || !phone || !email || !address) {
-//         return res.status(400).send({
-//             "message": "All fields are required, please check your input"
-//         });
-//     }
-    
-//     // 유효성 검사
-//     const id_regex = /^[A-Za-z0-9]+$/;
-//     const phone_regex = /^010-\d{4}-\d{4}$/;
-//     const email_regex = /^[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_\.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/;
-//     if (!id_regex.test(id)) {
-//         return res.status(400).send({
-//             "message": "Invalid ID format, please check"
-//         });
-//     }
-    
-//     if (!phone_regex.test(phone)) {
-//         return res.status(400).send({
-//             "message": "Invalid phone format, please enter as 010-xxxx-xxxx"
-//         });
-//     }
-    
-//     if (!email_regex.test(email)) {
-//         return res.status(400).send({
-//             "message": "Invalid email format, please check"
-//         });
-//     }
-    
-//     res.status(201).send({
-//         "message": "Sign Up successful"
-//     });
-// });
-// // app.post("/user",(req,res) => {
-// //     const {name, id, pw, age, gender, phone, email, address} = req.query;
-
-
-
-// //     res.send({
-// //         "message" : "Sign Up successful"
-// //     })
-// // })
-
-// // 1-2. 유저 정보 불러오기 
-// // SELECT * FROM user WHERE id = 'user_id';
-// //Read = GET
-// // app.get("/user",(req,res) => {
-// //     const inputed_id = req.query.id; // GET 방식으로 넘어오기
-// //     if(!inputed_id) {// 1. 값이 입력되지 않은 경우
-// //         return res.status(400).send({
-// //             "message": "Nothing inputed, please check"
-// //         })
-// //     }
-// //     const id_regex = /^[A-Za-z0-9]+$/ ;
-// //     if(id_regex.test(inputed_id)){
-// //         // const result_set = userData.filter((data)=>{return data.id === inputed_id;})
-// //         const result_set = userData.filter((data)=>data.id === inputed_id)
-        
-// //         if(result_set.length >0 ){
-// //             return res.status(200).send({ // 2. 정상적으로 값을 받았고 값을 돌려주는 경우
-// //                     "return" : id_regex.test(inputed_id),
-// //                     "user_data" : result_set
-// //             })
-// //         }else{
-// //             return res.status(200).send({ // 3. 정상적인 값이지만 돌려줄 값이 없는 경우
-// //                 "message" : "No such user data, please check"
-// //             })
-// //         }
-// //     }else{
-// //         return res.status(400).send( // 4. 비정상적인 값을 받은 경우
-// //             {
-// //                 "message": "Invalid input, please check"
-// //             }
-// //         )
-// //     }
-// // })
-
-
-// // 1-3. 유저 정보 수정
-// // UPDATE user SET pw = 'pw', name = 'name', phone = 'phone', email = 'email', address = 'address' WHERE id = 'id'
-// app.put("/user",(req,res) => {
-//     // const {id, pw, name, phone, email, address} = req.body; //POST 방식으로 넘어오기
-//     const {id, pw, name, phone, email, address} = req.query; //GET 방식으로 넘어오기
-//     if(id === null ){
-//         return res.status(400).send({
-//             "message":"Not enough input, pleas check"
-//         })
-//     }
-//     // const checkNull = arr.filter((elem) => data.elem === "")
-//     // if(checkNull) return res.status(400).send({
-//     //     "message" : "Not enough input, please check"
-//     // })
-
-
-//     const temp = id;
-//     res.send({
-//         "id" :  temp,
-//         "pw" : pw,
-//         "message": "hello"
-//     })
-    
-    
-    
-// })
-
-
-// // 1-4. 유저 정보 삭제
-// // DELETE FROM user WHERE id = 'id'
-// // app.delete("/user",(req,res) => {
-// //     const inputed_id = req.query.id; // GET 방식으로 넘어오기
-// //     if(!inputed_id) {// 1. 값이 입력되지 않은 경우
-// //         return res.status(400).send({
-// //             "message": "Nothing inputed, please check"
-// //         })
-// //     }
-// //     const id_regex = /^[A-Za-z0-9]+$/ ;
-// //     if(id_regex.test(inputed_id)){
-// //         // const result_set = userData.filter((data)=>{return data.id === inputed_id;})
-// //         const result_set = userData.filter((data)=>data.id === inputed_id)
-        
-// //         if(result_set.length >0 ){
-// //             return res.status(200).send({ // 2. 정상적으로 값을 받았고 값을 돌려주는 경우
-// //                     "message" : "User data successfully deleted"
-// //             })
-// //         }else{
-// //             return res.status(200).send({ // 3. 정상적인 값이지만 돌려줄 값이 없는 경우
-// //                 "message" : "No such user data, please check"
-// //             })
-// //         }
-// //     }else{
-// //         return res.status(400).send( // 4. 비정상적인 값을 받은 경우
-// //             {
-// //                 "message": "Invalid input, please check"
-// //             }
-// //         )
-// //     }
-// // })
-
-
-// // 1-5. id 찾기
-// // SELECT id FROM user WHERE name = 'name' AND phone = 'phone';
-
-// app.get("/user/userid",(req,res) => {
-//     const inputed_name = req.query.name;
-//     const inputed_phone = req.query.phone;
-//     if(!inputed_name || !inputed_phone) {// 1. 값이 입력되지 않은 경우
-//         return res.status(400).send({
-//             "message": "Nothing inputed, please check"
-//         })
-//     }
-//     const name_regex = /^[A-Za-z0-9]+$/ ;
-//     const phone_regex = /^010-\d{4}-\d{4}$/
-//     if(name_regex.test(inputed_name) && phone_regex.test(inputed_phone)){
-//         const result_set = userData.filter((data)=>data.name === inputed_name)
-        
-//         if(result_set.length >0 ){
-//             return res.status(200).send({ // 2. 정상적으로 값을 받았고 값을 돌려주는 경우
-//                     "id" : result_set.id,
-//                     "message" : "User data successfully deleted"
-//             })
-//         }else{
-//             return res.status(200).send({ // 3. 정상적인 값이지만 돌려줄 값이 없는 경우
-//                 "message" : "No such user data, please check"
-//             })
-//         }
-//     }else{
-//         return res.status(400).send( // 4. 비정상적인 값을 받은 경우
-//             {
-//                 "message": "Invalid input, please check"
-//             }
-//         )
-//     }
-
-// })
-
-// // 1-6. pw 찾기
-// // SELECT pw FROM user WHERE id = 'id';
-
-// app.get("/user/userpw",(req,res) => {
-//     const inputed_id = req.query.id; // GET 방식으로 넘어오기
-//     if(!inputed_id) {// 1. 값이 입력되지 않은 경우
-//         return res.status(400).send({
-//             "message": "Nothing inputed, please check"
-//         })
-//     }
-//     const id_regex = /^[A-Za-z0-9]+$/ ;
-//     if(id_regex.test(inputed_id)){
-//         // const result_set = userData.filter((data)=>{return data.id === inputed_id;})
-//         const result_set = userData.filter((data)=>data.id === inputed_id)
-        
-//         if(result_set.length >0 ){
-//             return res.status(200).send({ // 2. 정상적으로 값을 받았고 값을 돌려주는 경우
-//                 "pw" : result_set.pw,    
-//                 "message" : "User data successfully deleted"
-//             })
-//         }else{
-//             return res.status(200).send({ // 3. 정상적인 값이지만 돌려줄 값이 없는 경우
-//                 "message" : "No such user data, please check"
-//             })
-//         }
-//     }else{
-//         return res.status(400).send( // 4. 비정상적인 값을 받은 경우
-//             {
-//                 "message": "Invalid input, please check"
-//             }
-//         )
-//     }
-// })
-
-
-
-// // app.get("/user",(req,res) => {
-
-
-// //     // 처래해야할 것
-// //     // 1. 값 받기
-// //     // 1-1. 정규표현식과 비교하기(input이면)
-// //     // 2. DB 연결하기
-// //     // 3. DB에 query 보내기
-// //     // 4. 값 받아오기
-// //     // 5. 해당값 보내기
-
-// //     // 1. 값 받기
-// //     const inputed_id = req.query.id;
-// //     if(!inputed_id) return res.send({"message": "Nothing inputed, please check"})
-
-// //     // 1-1. 정규표현식과 비교하기
-
-// //     const id_regex = /^[A-Za-z0-9]+$/ ;
-// //     if(id_regex.test(inputed_id)){
-// //         //DB로 값 보내기
-// //         // for (let i = 0; i < userData.length; i++){
-// //         //     if(userData[i].id === inputed_id){
-// //         //         const result_set = userData[i];
-// //         //         return res.send({
-// //         //                 "return" : id_regex.test(inputed_id),
-// //         //                 "id" : result_set.id,
-// //         //                 "name" : result_set.name,
-// //         //                 "pw": result_set.pw,
-// //         //                 "age" : result_set.age,
-// //         //                 "gender" : result_set.gender,
-// //         //                 "phone" : result_set.phone,
-// //         //                 "email" : result_set.email,
-// //         //                 "address" : result_set.address
-// //         //             }
-// //         //         )
-// //         //     }
-// //         // }
-// //         const result_set = userData.filter((elem)=>{
-// //             return elem.id === inputed_id;
-// //         })
-
-// //         return res.send({
-// //                 "return" : id_regex.test(inputed_id),
-// //                 "message" : 
-// //                 "set" : result_set
-// //         })
-// //     }else{
-// //         return res.send(
-// //             {
-// //                 "message": "Wrong ID inputed, please check"
-// //             }
-// //         )
-// //     }
-
-// //     // 2. DB 연결하기
-
-// //     // 3. DB에 query 보내기
-
-// //     // 4. 값 받아오기
-
-// //     // 5. 해당 값 보내기
-
-// // })
-
-
-
-//     // const user_id = req.query.id;
-//     // // res.send(
-//     // //     {
-//     // //        "received Id": user_id
-
-//     // //     }
-//     // // )
-//     // // const data = userData.filter((obj) =>{
-//     // //     return obj[1] == user_id;
-//     // // })
-
-//     // for(let i = 0; i < userData.length; i++){
-//     //     // if(userData[i].id == user_id){
-            
-//     //     //         return res.send({
-//     //     //             "name" : data.name,
-//     //     //             "pw" : data.pw
-//     //     //         })
-//     //     // }else{
-//     //     //     return res.send(
-//     //     //         {
-//     //     //             "message": "There is no such info"
-//     //     //         }
-//     //     //     )
-//     //     // }
-
-//     // }
-
-//     // res.send({
-//     //     "length": userData.length,
-//     //     "name" : userData[0].name
-//     // })
-    
-//     // // if (user_id != NULL){
-//     // //     res.send({
-//     // //         name : 
-//     // //     });
-
-//     // // }
