@@ -22,6 +22,11 @@ const regex = {
 
 const reqType =["name","id","pw","age","gender","phone","email","address"]
 
+
+let findElement = (type,value) =>{
+    const checker = userData.filter((data) => data[type] === value)
+    return checker;
+}
 //유효성 검사
 let checkValid = (type, inputValue) => {
     if(!inputValue)throw customError("모든 값을 입력해주십시오",400)
@@ -36,6 +41,13 @@ let checkValid = (type, inputValue) => {
                 throw customError("해당정보로 가입된 계정이 존재합니다.",409)
             }
         }
+        // if(findElement(userData,inputValue).length > 0){
+        //     if(type === "id"){
+        //         throw customError("중복된 ID 입니다.",409)
+        //     }else{
+        //         throw customError("해당정보로 가입된 계정이 존재합니다.",409)
+        //     }
+        // }
     }
 }
 
@@ -56,6 +68,33 @@ router.post("",(req,res) => {
         })
     }
 })
+
+router.get("",(req,res) => {
+    const {id, pw} = req.body;
+    try{
+        if(!regex["idRegex"].test(id))throw customError("아이디가 올바르지 않습니다.", 400)
+        if(!regex["pwRegex"].test(pw))throw customError("비밀번호가 올바르지 않습니다.", 400)
+        const checkId = userData.filter((data) =>data.id === id && data.pw === pw)  
+        if(checkId != ""){
+            req.session.username = checkId.name;
+            req.session.userid = checkId.id;
+            return res.status(200).send({
+
+                "id": checkId,
+                "message": `${req.session.userid}로 로그인에 성공하였습니다.`
+            
+            })
+        }else{
+            throw customError("해당 사용자 정보를 찾을 수 없습니다.",404);
+        }
+
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message": err.message
+        })
+    }
+})
+
 
 
 module.exports = router;

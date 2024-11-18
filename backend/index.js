@@ -1,6 +1,21 @@
-const express = require("express")
-const app = express()
-app.use(express.json())
+const express = require("express");
+const session = require("express-session");
+const cookieParser = require('cookie-parser');
+const app = express();
+app.use(cookieParser(process.env.COOKIE_SECRET));
+app.use(express.json());
+app.use(session({
+    secure: true,
+    secret: process.env.COOKIE_SECRET,
+    resave: false,
+    saveUninitialied: true,
+    cookie:{
+        httpOnly: true,
+        Secure: true
+    },
+    name: 'session-cookie'
+
+}))
 
 
 const userRouters = require("./src/routes/user")
