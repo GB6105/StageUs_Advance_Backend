@@ -51,8 +51,8 @@ let checkValid = (type, inputValue) => {
     }
 }
 
+//회원 가입 API
 router.post("",(req,res) => {
-    // Router
     try{       
         reqType.forEach((elem) => {
             checkValid(elem,req.body[elem])
@@ -69,6 +69,7 @@ router.post("",(req,res) => {
     }
 })
 
+// 로그인 API
 router.get("",(req,res) => {
     const {id, pw} = req.body;
     try{
@@ -76,13 +77,10 @@ router.get("",(req,res) => {
         if(!regex["pwRegex"].test(pw))throw customError("비밀번호가 올바르지 않습니다.", 400)
         const checkId = userData.filter((data) =>data.id === id && data.pw === pw)  
         if(checkId != ""){
-            req.session.username = checkId.name;
-            req.session.userid = checkId.id;
+            req.session.userid = checkId[0].id; // 유저 아이디만 세션에 저장
             return res.status(200).send({
-
-                "id": checkId,
+                "user": req.session.userid,
                 "message": `${req.session.userid}로 로그인에 성공하였습니다.`
-            
             })
         }else{
             throw customError("해당 사용자 정보를 찾을 수 없습니다.",404);
@@ -95,6 +93,97 @@ router.get("",(req,res) => {
     }
 })
 
+// 사용자 정보 확인 API
+router.get("/:id",(req,res) =>{
+    try{    
+        if(req.session.userid === req.params.id){
+            const findUser = userData.filter((data) => data.id === req.params.id)
+            res.status(201).send({
+                "user" : findUser[0]
+            })
+        }else{
+            throw customError("해당 계정(게터) 정보를 찾을 수 없습니다.",404) 
+        }
+
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }    
+})
+
+// 사용자 계정 정보 수정
+
+router.patch("/:id",(req,res) => {
+    try{
+        if(req.session.userid == "" || req.session.userid !== req.params.id){
+            throw customError("잘못된 접근입니다. 로그인 후 사용해주세요",403);
+        }else{
+            const {name, id, pw, gender, phone, email, address } = req.body;
+            res.status(200).send({
+                "message": "성공"
+            })
+        }
+
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message":err.message
+        })
+    }
+})
+
+
+// 사용자 정보 삭제
+router.delete("/:id", (req,res) => {
+    try{
+        if(req.session.userid == "" || req.session.userid !== req.params.id){
+            throw customError("잘못된 접근입니다. 로그인 후 사용해주세요",403);
+        }else{
+            // DB 연결후 DB에서 해당 유저 정보 삭제
+            res.status(200).send({
+                "message": "회원 탈퇴가 완료되었습니다."
+            })
+        }
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }
+})
+
+// 사용자 ID 찾기
+router.get("/find-id",(req,res)=>{
+    try{
+        const {name, email} = req.body;
+        res.send({
+            "message": "성공"
+        })
+        // checkValid(name,req.body[name])
+        // checkValie(email,req.body[email])
+        //req.body.forEach((elem) => checkValid(elem,req.body[elem]))
+        // const checkId = userData.filter((data) => data.name === name && data.email === email)
+        // console.log(checkId)  
+        // if(checkId ){
+        //     res.status(201).send({
+        //         "id":checkId[0].id,
+        //         "message": `ID는 ${checkId[0].id} 입니다.`
+        //     })
+        // }else{
+        //     throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
+        // }
+
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }
+
+})
+
+// 사용자 PW 찾기
+router.get("/find-pw",(req,res) => {
+
+})
 
 
 module.exports = router;
