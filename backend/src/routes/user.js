@@ -133,6 +133,42 @@ router.patch("/:id",(req,res) => {
 })
 
 
+
+// 사용자 ID 찾기
+router.get("/find-id",(req,res)=>{
+    try{
+        const {name, email} = req.body;
+        res.send({
+            "message": "성공"
+        })
+        // checkValid(name,req.body[name])
+        // checkValie(email,req.body[email])
+        //req.body.forEach((elem) => checkValid(elem,req.body[elem]))
+        // const checkId = userData.filter((data) => data.name === name && data.email === email)
+        // console.log(checkId)  
+        // if(checkId ){
+        //     res.status(201).send({
+            //         "id":checkId[0].id,
+            //         "message": `ID는 ${checkId[0].id} 입니다.`
+            //     })
+            // }else{
+                //     throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
+                // }
+                
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }
+            
+})
+        
+// 사용자 PW 찾기
+router.get("/find-pw",(req,res) => {
+
+})
+        
+
 // 사용자 정보 삭제
 router.delete("/:id", (req,res) => {
     try{
@@ -150,40 +186,5 @@ router.delete("/:id", (req,res) => {
         })
     }
 })
-
-// 사용자 ID 찾기
-router.get("/find-id",(req,res)=>{
-    try{
-        const {name, email} = req.body;
-        res.send({
-            "message": "성공"
-        })
-        // checkValid(name,req.body[name])
-        // checkValie(email,req.body[email])
-        //req.body.forEach((elem) => checkValid(elem,req.body[elem]))
-        // const checkId = userData.filter((data) => data.name === name && data.email === email)
-        // console.log(checkId)  
-        // if(checkId ){
-        //     res.status(201).send({
-        //         "id":checkId[0].id,
-        //         "message": `ID는 ${checkId[0].id} 입니다.`
-        //     })
-        // }else{
-        //     throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
-        // }
-
-    }catch(err){
-        res.status(err.status || 500).send({
-            "message" : err.message
-        })
-    }
-
-})
-
-// 사용자 PW 찾기
-router.get("/find-pw",(req,res) => {
-
-})
-
-
+    
 module.exports = router;
