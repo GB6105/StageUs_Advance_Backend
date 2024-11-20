@@ -45,13 +45,12 @@ let checkAndFind = (field,input) =>{
     return result[0][field] // 유효성 통과 및 값 있음 -> 값 반환
 }
 
-
 // 로그인 여부 체크
 let authCheck = (req) => {
     if(!req.session.userid || req.session.userid === undefined) throw customError("잘못된 접근입니다. 로그인해주세요", 403);
 }
 
-// 게시글 불러오기 API
+// 게시글 목록 불러오기 API
 router.get("",(req,res) => {
     try{
         const page_number = req.query.page;
@@ -93,16 +92,42 @@ router.post("",(req,res) => {
 
 // 게시글 불러오기 API
 router.get("/:idx",(req,res)=>{
-    
+    try{
+        authCheck(req);
+        const articleIdx = req.params.idx;
+        const resultArticle = article.filter((article) => article.idx == articleIdx)
+        if(!resultArticle || resultArticle.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
+        res.status(201).send({
+            "article" : resultArticle[0]
+        })
+
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }
 })
 
 //게시글 수정하기 API
 router.patch("/:idx",(req,res)=>{
+    try{
 
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }
 })
 
 //게시글 삭제하기 API
 router.delete("/:idx",(req,res)=>{
+    try{
 
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }
 })
+
 module.exports = router;
