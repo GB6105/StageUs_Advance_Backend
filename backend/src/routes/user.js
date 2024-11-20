@@ -166,7 +166,29 @@ router.get("/find-id",(req,res)=>{
         
 // 사용자 PW 찾기
 router.get("/find-pw",(req,res) => {
+    try{
+        const {id, name, email} = req.body;
 
+        // 값에 대해서 유효성 검사 진행
+        const checkId = checkAndFind("id",id)
+        const checkName = checkAndFind("name",name)
+        const checkEmail = checkAndFind("email",email)
+
+        // 값이 해당 정보에 있는 지 확인
+        const userResult = userData.filter((data) => data.id === checkId && data.name === checkName && data.email === checkEmail)
+
+        if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
+        const userResultPw = userResult[0].pw;
+        res.status(201).send({
+                "pw":userResultPw,
+                "message": `비밀번호는 ${userResultPw} 입니다.`
+            })             
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }
+            
 })
         
 // 사용자 정보 확인 API
