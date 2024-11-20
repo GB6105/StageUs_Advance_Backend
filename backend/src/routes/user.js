@@ -20,13 +20,8 @@ const regex = {
     addressRegex : /^[A-Z][a-z]{1,}$/
 }
 
-const reqType =["name","id","pw","age","gender","phone","email","address"]
+const field =["name","id","pw","age","gender","phone","email","address"]
 
-
-let findElement = (type,value) =>{
-    const checker = userData.filter((data) => data[type] === value)
-    return checker;
-}
 //유효성 검사
 let checkValid = (type, inputValue) => {
     if(!inputValue)throw customError("모든 값을 입력해주십시오",400)
@@ -41,33 +36,83 @@ let checkValid = (type, inputValue) => {
                 throw customError("해당정보로 가입된 계정이 존재합니다.",409)
             }
         }
-        // if(findElement(userData,inputValue).length > 0){
-        //     if(type === "id"){
-        //         throw customError("중복된 ID 입니다.",409)
-        //     }else{
-        //         throw customError("해당정보로 가입된 계정이 존재합니다.",409)
-        //     }
-        // }
     }
 }
 
-//회원 가입 API
+// 사용하고 싶은형태
+// chekcValid(name){
+//  자동으로 input인 name 하고 field의 name하고 비교 해주길 원함
+//}
+
+// let checkValid2 = (input) =>{
+//     const fieldRegex = regex[`${input}Regex`]
+//     const fieldType = field.filter((elem) => elem === input)
+//     if(!fieldRegex.test(fieldType)) throw customError(`${input}의 형식이 올바르지 않습니다.`, 400)
+// }
+
+// 생각한건 input이 들어오면 input의 벨류대로 쓰고 input의 타입을 이름이로 사용하고 싶은데
+
+
+// 유효성 검사 함수
+let checkValid2 = (field, input) => {
+    const fieldRegex = regex[`${field}Regex`];
+    if(!fieldRegex.test(input)) throw customError("${field}의 형식이 올바르지 않습니다.",400)
+    return input;
+}
+
+// 중복 값 찾기 함수 -> 값 찾기 함수 (중복값 있으면 해당 값을 반환 없으면 boolean 제공)
+// 회원가입에서는 호출 후 값이 있으면 값을 받아서 값이 있음을 통해서 중지 (if 함수 is true) throw
+// 값이 없으면 넘어감 -> false 반환 -> if 그냥 넘어감
+// 로그인, id 에서는 값 찾아서 해당 값 반환
+
+let findElement = (field, input) => {
+    const result = userData.filter((data) => data[field] === input)
+    if(result){
+        return result
+    }else{
+        return false
+    }
+}
+
+//둘을 합친 케이스
+
+let checkAndFind = (field,input) =>{
+
+    if(!input) throw customError(`${field}를 입력해주세요`,400)
+
+    const fieldRegex = regex[`${field}Regex`];
+    // console.log(fieldRegex,"regex in function")
+    // console.log(input,"input value in fuction")
+    
+    // 유효성 통과 실패 -> 함수 단계에서 thow error
+    if(!fieldRegex.test(input))throw customError(`${field}의 형식이 올바르지 않습니다.`,400)
+    
+    //유효성 통과 성공 해당 값 탐색
+    const result = userData.filter((data) => data[field] === input)
+    // console.log(result[0],"result fomr function")
+    
+    // 값 없음 -> false  반환 (회원 가입 가능 여부, 유저 정보 찾기(유저 없음))
+    if(result.length === 0)return false // 유효성 통과 성공했지만 값 없음 -> false
+
+    // 값 있음 -> 실제 값 반환 (중복 회원 방지, id,pw, 유저 정보 찾기(유저 있음))
+    return result[0][field] // 유효성 통과 및 값 있음 -> 값 반환
+}
+
+
+// 회원 가입 API v1
 router.post("",(req,res) => {
     try{       
-        reqType.forEach((elem) => {
-            checkValid(elem,req.body[elem])
-        })
-
+        reqType.forEach((elem) => checkValid(elem,req.body[elem]))
         return res.status(200).send({
             "message": "계정이 생성되었습니다."
         })
-
     }catch(err){
         res.status(err.statusCode || 500).send({
             "message": err.message
         })
     }
 })
+// 회원 가입 API v2
 
 // 로그인 API
 router.get("",(req,res) => {
@@ -93,6 +138,37 @@ router.get("",(req,res) => {
     }
 })
 
+// 사용자 ID 찾기
+router.get("/find-id",(req,res)=>{
+    try{
+        const {name, email} = req.body;
+
+        // 값에 대해서 유효성 검사 진행
+        const checkName = checkAndFind("name",name)
+        const checkEmail = checkAndFind("email",email)
+
+        // 값이 해당 정보에 있는 지 확인
+        const userResult = userData.filter((data) => data.name === checkName && data.email === checkEmail)
+
+        if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
+        const userResultId = userResult[0].id;
+        res.status(201).send({
+                "id":userResultId,
+                "message": `ID는 ${userResultId} 입니다.`
+            })             
+    }catch(err){
+        res.status(err.status || 500).send({
+            "message" : err.message
+        })
+    }
+            
+})
+        
+// 사용자 PW 찾기
+router.get("/find-pw",(req,res) => {
+
+})
+        
 // 사용자 정보 확인 API
 router.get("/:id",(req,res) =>{
     try{    
@@ -132,42 +208,6 @@ router.patch("/:id",(req,res) => {
     }
 })
 
-
-
-// 사용자 ID 찾기
-router.get("/find-id",(req,res)=>{
-    try{
-        const {name, email} = req.body;
-        res.send({
-            "message": "성공"
-        })
-        // checkValid(name,req.body[name])
-        // checkValie(email,req.body[email])
-        //req.body.forEach((elem) => checkValid(elem,req.body[elem]))
-        // const checkId = userData.filter((data) => data.name === name && data.email === email)
-        // console.log(checkId)  
-        // if(checkId ){
-        //     res.status(201).send({
-            //         "id":checkId[0].id,
-            //         "message": `ID는 ${checkId[0].id} 입니다.`
-            //     })
-            // }else{
-                //     throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
-                // }
-                
-    }catch(err){
-        res.status(err.status || 500).send({
-            "message" : err.message
-        })
-    }
-            
-})
-        
-// 사용자 PW 찾기
-router.get("/find-pw",(req,res) => {
-
-})
-        
 
 // 사용자 정보 삭제
 router.delete("/:id", (req,res) => {
