@@ -1,7 +1,7 @@
 const router = require("express").Router()
 const customError = require("../utils/customError")
 
-
+// 더미 데이터
 const userData = [
     { name: "user1", id: "test1", pw: "test1111", age: 20, gender: "M", phone: "010-1111-1111", email: "test1@gmail.com", address: "Korea" },
     { name: "user2", id: "test2", pw: "test2222", age: 30, gender: "F", phone: "010-2222-2222", email: "test2@gmail.com", address: "Japan" },
@@ -20,9 +20,9 @@ const regex = {
     addressRegex : /^[A-Z][a-z]{1,}$/
 }
 
-const field =["name","id","pw","age","gender","phone","email","address"]
+// const field =["name","id","pw","age","gender","phone","email","address"]
 
-//유효성 검사
+//유효성 검사 v1
 let checkValid = (type, inputValue) => {
     if(!inputValue)throw customError("모든 값을 입력해주십시오",400)
     const dynamicRegex = regex[`${type}Regex`]
@@ -39,21 +39,19 @@ let checkValid = (type, inputValue) => {
     }
 }
 
-// 사용하고 싶은형태
-// chekcValid(name){
-//  자동으로 input인 name 하고 field의 name하고 비교 해주길 원함
-//}
-
-// let checkValid2 = (input) =>{
-//     const fieldRegex = regex[`${input}Regex`]
-//     const fieldType = field.filter((elem) => elem === input)
-//     if(!fieldRegex.test(fieldType)) throw customError(`${input}의 형식이 올바르지 않습니다.`, 400)
-// }
-
-// 생각한건 input이 들어오면 input의 벨류대로 쓰고 input의 타입을 이름이로 사용하고 싶은데
-
-
-// 유효성 검사 함수
+/*
+사용하고 싶은형태
+chekcValid(name){
+ 자동으로 input인 name 하고 field의 name하고 비교 해주길 원함
+}
+let checkValid2 = (input) =>{
+    const fieldRegex = regex[`${input}Regex`]
+    const fieldType = field.filter((elem) => elem === input)
+    if(!fieldRegex.test(fieldType)) throw customError(`${input}의 형식이 올바르지 않습니다.`, 400)
+}
+생각한건 input이 들어오면 input의 벨류대로 쓰고 input의 타입을 이름이로 사용하고 싶은데
+*/
+// 유효성 검사 함수 (검사만)v2
 let checkValid2 = (field, input) => {
     const fieldRegex = regex[`${field}Regex`];
     if(!fieldRegex.test(input)) throw customError("${field}의 형식이 올바르지 않습니다.",400)
@@ -64,7 +62,6 @@ let checkValid2 = (field, input) => {
 // 회원가입에서는 호출 후 값이 있으면 값을 받아서 값이 있음을 통해서 중지 (if 함수 is true) throw
 // 값이 없으면 넘어감 -> false 반환 -> if 그냥 넘어감
 // 로그인, id 에서는 값 찾아서 해당 값 반환
-
 let findElement = (field, input) => {
     const result = userData.filter((data) => data[field] === input)
     if(result){
@@ -74,8 +71,7 @@ let findElement = (field, input) => {
     }
 }
 
-//둘을 합친 케이스
-
+// 유효성 검사 및 값 찾기 통합 함수
 let checkAndFind = (field,input) =>{
 
     if(!input) throw customError(`${field}를 입력해주세요`,400)
