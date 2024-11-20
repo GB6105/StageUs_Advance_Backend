@@ -18,9 +18,9 @@ const regex = {
     phoneRegex : /^010-[0-9]{4}-[0-9]{4}$/, // 010-xxxx-xxxx 가능
     emailRegex : /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
     addressRegex : /^[A-Z][a-z]{1,}$/,
-    titleRegex : /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&]{2,40}$/, // 영어,한글,숫자,특수문자 가능 2-40글자
+    titleRegex : /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&\s]{2,40}$/, // 영어,한글,숫자,특수문자 가능 2-40글자
     categoryRegex : /^(category1|category2|category3)$/, // 지정된 카테고리만 입력 가능
-    contentRegex : /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&]{2,}$/ // 영어, 한글, 숫자, 특수문자 가능 2글자 이상 자유
+    contentRegex : /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&\s]{2,}$/ // 영어, 한글, 숫자, 특수문자 가능 2글자 이상 자유
 }
 
 let checkAndFind = (field,input) =>{
@@ -35,7 +35,7 @@ let checkAndFind = (field,input) =>{
     if(!fieldRegex.test(input))throw customError(`${field}의 형식이 올바르지 않습니다.`,400)
     
     //유효성 통과 성공 해당 값 탐색
-    const result = userData.filter((data) => data[field] === input)
+    const result = article.filter((data) => data[field] === input)
     // console.log(result[0],"result fomr function")
     
     // 값 없음 -> false  반환 (회원 가입 가능 여부, 유저 정보 찾기(유저 없음))
@@ -47,7 +47,8 @@ let checkAndFind = (field,input) =>{
 
 // 로그인 여부 체크
 let authCheck = (req) => {
-    if(!req.session.userid || req.session.userid === undefined) throw customError("잘못된 접근입니다. 로그인해주세요", 403);
+    // if(!req.session.userid || req.session.userid === undefined) throw customError("잘못된 접근입니다. 로그인해주세요", 403);
+    if(!req.session?.userid) throw customError("잘못된 접근입니다. 로그인해주세요", 403);
 }
 
 // 게시글 목록 불러오기 API
@@ -71,10 +72,11 @@ router.get("",(req,res) => {
 // 게시글 작성 API
 router.post("",(req,res) => {
     try{
+        const {title, category_name, content} = req.body 
+        const writer_id = req.session.userid;//로그인 안하고 api 호출시 에러 메시지 출력 안하는 문제가ㅋ
         authCheck(req);
-        const {user_id, title, category_name, content} = req.body 
+        console.log("fien")
         //추후 forEach로 수정 해볼듯
-        checkAndFind("id", user_id);
         checkAndFind("title",title);
         checkAndFind("category",category_name);
         checkAndFind("content", content);
@@ -111,7 +113,23 @@ router.get("/:idx",(req,res)=>{
 //게시글 수정하기 API
 router.patch("/:idx",(req,res)=>{
     try{
+        authCheck(req);
+        // 게시글 확인
+        const articleIdx = req.params.idx;
+        const resultArticle = article.filter((article) => article.idx == articleIdx)
+        if(!resultArticle || resultArticle.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
+        
+        //게시글 수정
+        const {title,category_name, content} = req.body
+        checkAndFind("title", title)
+        checkAndFind("category",category_name)
+        checkAndFind("content",content)
 
+        //DB로 게시글 수정값 올리기
+
+        res.status(200).send({
+            "message" : "게시글이 수정되었습니다."
+        })
     }catch(err){
         res.status(err.status || 500).send({
             "message" : err.message
@@ -122,12 +140,22 @@ router.patch("/:idx",(req,res)=>{
 //게시글 삭제하기 API
 router.delete("/:idx",(req,res)=>{
     try{
-
+        authCheck(req);
+        const articleIdx = req.params.idx;
+        const resultArticle = article.filter((article) => article.idx == articleIdx)
+        if(!resultArticle || resultArticle.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
+        //DB 통해서 게시글 삭제 처리
+        res.status(200).send({
+            "message" : "게시글이 삭제되었습니다."
+        })
     }catch(err){
         res.status(err.status || 500).send({
             "message" : err.message
         })
     }
 })
+
+
+
 
 module.exports = router;
