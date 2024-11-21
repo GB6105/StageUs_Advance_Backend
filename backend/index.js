@@ -17,8 +17,8 @@ app.use("/user",userRouter) // 가장 윗 계층
 const articleRouters = require("./src/routes/article")
 app.use("/article",articleRouters) // 가장 윗 계층 
 
-// const commentRouters = require("./src/routes/comment")
-// app.use("/comment",commentRouters)
+const commentRouters = require("./src/routes/comment")
+app.use("/article",commentRouters)
 
 
 

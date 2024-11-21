@@ -8,6 +8,13 @@ const article = [
     {"idx" : 3, "user_id": "test3", "title":"article3", "category_name" : "category3", "view":333, "content":"test article 3", "like": 33, "creat_at": "2024-11-33"}
 ]
 
+const user_like_data = [
+    {"idx" : 1, "article_idx" : 1, "liked": 0 },
+    {"idx" : 2, "article_idx" : 2, "liked": 1 },
+    {"idx" : 3, "article_idx" : 3, "liked": 0 }
+    
+]
+
 //정규표현식
 const regex = {
     nameRegex :/^[a-zA-Z가-힣0-9]{2,20}$/, //영어,한글 가능 2-20글자
@@ -92,6 +99,66 @@ router.post("",(req,res) => {
     }
 })
 
+// 게시글 좋아요 해제
+router.delete("/:idx/like/:like-idx",(req,res) => {
+    //해당 게시글에 좋아요라는 속성을 추가(카테고리 느낌)
+    try{
+        authCheck(req);
+        const like_ = req.body.liked;
+        const recent_article_idx = req.params.idx;
+        const result_like = req.params.like-idx;
+        console.log(recent_article_idx)
+        console.log(result_like)
+
+        //게시글 존재 여부 확인
+        const result_article = article.filter((article) => article.idx == recent_article_idx)
+        if(!result_article || result_article.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
+
+        //게시글에 좋아요 여부 확인
+        //const result_like = user_like_data.filter((data) => data.article_idx == recent_article_idx) //db 조인이면 간편할듯
+        if(like ==false && result_like[0].liked == 1){
+            res.status(200).send({
+                "message":"게시글에 좋아요를 해제했습니다."
+            })
+        }
+    }catch(err){
+        res.status(err.status||500).send({
+            "message": err.message
+        })
+    }
+})
+
+// 게시글 좋아요 추가
+router.post("/:idx/like",(req,res) => {
+    //해당 게시글에 좋아요라는 속성을 추가(카테고리 느낌)
+    try{
+        authCheck(req);
+        const like = req.body.liked;
+
+        //게시글 존재 여부 확인
+        const recent_article_idx = req.params.idx;
+        const result_article = article.filter((article) => article.idx == recent_article_idx)
+        if(!result_article || result_article.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
+
+        //게시글에 좋아요 여부 확인
+        // const result_like = user_like_data.filter((data) => data[article_idx] == result_article.idx) //db 조인이면 간편할듯
+        const result_like = user_like_data.filter((data) => data.article_idx == recent_article_idx) //db 조인이면 간편할듯
+        if(like ==true && result_like[0].liked == 0){
+            res.status(200).send({
+                "message":"게시글에 좋아요를 남겼습니다."
+            })
+        }else{
+            res.status(409).send({
+                "message" : "이미 좋아요한 게시글 입니다."
+            })
+        }
+    }catch(err){
+        res.status(err.status||500).send({
+            "message": err.message
+        })
+    }
+})
+
 // 게시글 불러오기 API
 router.get("/:idx",(req,res)=>{
     try{
@@ -154,7 +221,6 @@ router.delete("/:idx",(req,res)=>{
         })
     }
 })
-
 
 
 
