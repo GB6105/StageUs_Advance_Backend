@@ -100,13 +100,13 @@ router.post("",(req,res) => {
 })
 
 // 게시글 좋아요 해제
-router.delete("/:idx/like/:like-idx",(req,res) => {
+router.delete("/:idx/like/:likeidx",(req,res) => {
     //해당 게시글에 좋아요라는 속성을 추가(카테고리 느낌)
     try{
         authCheck(req);
         const like_ = req.body.liked;
         const recent_article_idx = req.params.idx;
-        const result_like = req.params.like-idx;
+        const recent_like = req.params.likeidx;
         console.log(recent_article_idx)
         console.log(result_like)
 
@@ -115,8 +115,8 @@ router.delete("/:idx/like/:like-idx",(req,res) => {
         if(!result_article || result_article.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
 
         //게시글에 좋아요 여부 확인
-        //const result_like = user_like_data.filter((data) => data.article_idx == recent_article_idx) //db 조인이면 간편할듯
-        if(like ==false && result_like[0].liked == 1){
+        const result_like = user_like_data.filter((data) => data.article_idx == recent_article_idx) //db 조인이면 간편할듯
+        if(result_like[0].liked == 1){
             res.status(200).send({
                 "message":"게시글에 좋아요를 해제했습니다."
             })
