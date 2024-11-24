@@ -30,4 +30,4 @@ const wrapper = (func) => {
     }
 }
 
-module.export = wrapper
+module.exports = wrapper
