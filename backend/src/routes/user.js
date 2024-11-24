@@ -1,5 +1,10 @@
 const router = require("express").Router()
 const customError = require("../utils/customError")
+const regex = require("../constants/regx")
+const wrapper = require("../utils/wrapper")
+const validater = require("../utils/validater")
+const authenticator = require("../utils/authenticator")
+
 
 // 더미 데이터
 const userData = [
@@ -8,24 +13,11 @@ const userData = [
     { name: "user3", id: "test3", pw: "test3333", age: 40, gender: "M", phone: "010-3333-3333", email: "test3@gmail.com", address: "Canada" }
 ];
 
-// 정규표현식
-const regex = {
-    nameRegex :/^[a-zA-Z가-힣0-9]{2,20}$/, //영어,한글 가능 2-20글자
-    idRegex : /^[a-zA-Z0-9]{2,20}$/, // 영어, 숫자 가능 2-20글자
-    pwRegex : /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&]?).{8,16}$/, //영어 숫자 필수, 특수문자 옵션, 8-16글자
-    ageRegex : /^[0-9]{1,2}$/,
-    genderRegex : /^(M|F)$/, //M, F 만 가능;
-    phoneRegex : /^010-[0-9]{4}-[0-9]{4}$/, // 010-xxxx-xxxx 가능
-    emailRegex : /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-    addressRegex : /^[A-Z][a-z]{1,}$/
-}
-
-// const field =["name","id","pw","age","gender","phone","email","address"]
 
 //유효성 검사 v1
 let checkValid = (type, inputValue) => {
     if(!inputValue)throw customError("모든 값을 입력해주십시오",400)
-    const dynamicRegex = regex[`${type}Regex`]
+    const dynamicRegex = regex[`${type}Regex`] // object 변수 이름을 단순하게 작성하면 굳이 스트링으로 변환하지 않고 매개변수로 사용 가능
     if(!dynamicRegex.test(inputValue))throw customError(`${type}이 올바르지 않습니다.`,400)
     if(type === "id" || type === "name" || type === "email"){
         const checkinputedValue = userData.filter((data) => data[type] === inputValue);
@@ -51,27 +43,27 @@ let checkValid2 = (input) =>{
 }
 생각한건 input이 들어오면 input의 벨류대로 쓰고 input의 타입을 이름이로 사용하고 싶은데
 */
-// 유효성 검사 함수 (검사만)v2
-let checkValid2 = (field, input) => {
-    const fieldRegex = regex[`${field}Regex`];
-    if(!fieldRegex.test(input)) throw customError("${field}의 형식이 올바르지 않습니다.",400)
-    return input;
-}
+// // 유효성 검사 함수 (검사만)v2
+// let checkValid2 = (field, input) => {
+//     const fieldRegex = regex[`${field}Regex`];
+//     if(!fieldRegex.test(input)) throw customError("${field}의 형식이 올바르지 않습니다.",400)
+//     return input;
+// }
 
-// 중복 값 찾기 함수 -> 값 찾기 함수 (중복값 있으면 해당 값을 반환 없으면 boolean 제공)
-// 회원가입에서는 호출 후 값이 있으면 값을 받아서 값이 있음을 통해서 중지 (if 함수 is true) throw
-// 값이 없으면 넘어감 -> false 반환 -> if 그냥 넘어감
-// 로그인, id 에서는 값 찾아서 해당 값 반환
-let findElement = (field, input) => {
-    const result = userData.filter((data) => data[field] === input)
-    if(result){
-        return result
-    }else{
-        return false
-    }
-}
+// // 중복 값 찾기 함수 -> 값 찾기 함수 (중복값 있으면 해당 값을 반환 없으면 boolean 제공)
+// // 회원가입에서는 호출 후 값이 있으면 값을 받아서 값이 있음을 통해서 중지 (if 함수 is true) throw
+// // 값이 없으면 넘어감 -> false 반환 -> if 그냥 넘어감
+// // 로그인, id 에서는 값 찾아서 해당 값 반환
+// let findElement = (field, input) => {
+//     const result = userData.filter((data) => data[field] === input)
+//     if(result){
+//         return result
+//     }else{
+//         return false
+//     }
+// }
 
-// 유효성 검사 및 값 찾기 통합 함수
+// 유효성 검사 및 값 찾기 통합 함수 //validater
 let checkAndFind = (field,input) =>{
 
     if(!input) throw customError(`${field}를 입력해주세요`,400)
@@ -119,7 +111,7 @@ router.get("",(req,res) => {
         const checkId = userData.filter((data) =>data.id === id && data.pw === pw)  
         if(checkId != ""){
             req.session.userid = checkId[0].id; // 유저 아이디만 세션에 저장
-            return res.status(200).send({
+            return res.status(200).send({ // 함수를 끝낸는 기능이 없는 send 이므로 return 해주여야함 (그걸 이용해서 나눠서 응답만 보내고 하기도함) 여기서 return피료없음
                 "user": req.session.userid,
                 "message": `${req.session.userid}로 로그인에 성공하였습니다.`
             })
@@ -187,15 +179,15 @@ router.get("/find-pw",(req,res) => {
             
 })
         
-// 사용자 정보 확인 API
-router.get("/:id",(req,res) =>{
+// 사용자 정보 확인 API (본인 정보는 아무것도 피요없음)
+router.get("/:id",(req,res) =>{ //:id 없는게 맞음
     try{    
-        if(req.session.userid === req.params.id){
+        if(req.session.userid === req.params.id){ // 필요없는 부분 -> 세션만 있으면 다 가능
             const findUser = userData.filter((data) => data.id === req.params.id)
             res.status(201).send({
                 "user" : findUser[0]
             })
-        }else{
+        }else{ // 필요없는 부분 -> 세션이 없을 때 안된다는 오류 구문정도는 추가해주면 됨
             throw customError("해당 계정(게터) 정보를 찾을 수 없습니다.",404) 
         }
 
@@ -218,6 +210,8 @@ router.patch("/:id",(req,res) => {
                 "message": "성공"
             })
         }
+
+        // 로그인 모듈 첨가해주기
 
     }catch(err){
         res.status(err.status || 500).send({
