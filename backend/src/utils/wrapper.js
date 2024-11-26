@@ -15,9 +15,9 @@
 
 
 const wrapper = (func) => {
-    return (req,res)=>{
+    return (req,res,...elem)=>{
         try{
-            func(req,res)
+            func(req,res,...elem)
         }catch(err){
             if(process.env.MODE === "dev"){
                 console.log(err.message)

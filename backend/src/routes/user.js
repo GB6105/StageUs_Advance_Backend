@@ -100,21 +100,39 @@ let checkValid2 = (input) =>{
 // })
 
 // 회원 가입 API v2
-router.post("",wrapper((req,res)=>{
-    const {name, id, pw, age, gender, phone, email, address} = req.body;
-    if(!name.match(regx.name)) throw customError("이름이 양식에 맞지 않습니다.",401)
-    if(!id.match(regx.id)) throw customError("ID가 양식에 맞지 않습니다.",401)
-    if(!pw.match(regx.pw)) throw customError("PW가 양식에 맞지 않습니다.",401)
-    if(!age.match(regx.age)) throw customError("나이가 양식에 맞지 않습니다.",401)
-    if(!gender.match(regx.gender)) throw customError("성별이 양식에 맞지 않습니다.",401)
-    if(!phone.match(regx.phone)) throw customError("전화번호가 양식에 맞지 않습니다.",401)
-    if(!email.match(regx.email)) throw customError("email이 양식에 맞지 않습니다.",401)
-    if(!address.match(regx.address)) throw customError("주소가 양식에 맞지 않습니다.",401)
+// router.post("",wrapper((req,res)=>{
+//     const {name, id, pw, age, gender, phone, email, address} = req.body;
+//     if(!name.match(regx.name)) throw customError("이름이 양식에 맞지 않습니다.",401)
+//     if(!id.match(regx.id)) throw customError("ID가 양식에 맞지 않습니다.",401)
+//     if(!pw.match(regx.pw)) throw customError("PW가 양식에 맞지 않습니다.",401)
+//     if(!age.match(regx.age)) throw customError("나이가 양식에 맞지 않습니다.",401)
+//     if(!gender.match(regx.gender)) throw customError("성별이 양식에 맞지 않습니다.",401)
+//     if(!phone.match(regx.phone)) throw customError("전화번호가 양식에 맞지 않습니다.",401)
+//     if(!email.match(regx.email)) throw customError("email이 양식에 맞지 않습니다.",401)
+//     if(!address.match(regx.address)) throw customError("주소가 양식에 맞지 않습니다.",401)
     
+//     res.status(200).send({
+//         "message" : "회원가입에 성공하였습니다."
+//     })
+// }))
+
+//회원 가입 API v3
+router.post("",validater(req,res),wrapper((req,res)=>{
+    const {name, id, pw, age, gender, phone, email, address} = req.body;
+    // validater(req,res,"name",name);
+    // validater(req,res,"id",id);
+    // validater("id",id);
+    // validater("pw",pw);
+    // validater("age",age);
+    // validater("gender",gender);
+    // validater("phone",phone);
+    // validater("email",email);
+    // validater("address",address);
     res.status(200).send({
-        "message" : "회원가입에 성공하였습니다."
+        "message" : "회원가입에 성a공하였습니다."
     })
 }))
+
 
 // 로그인 API
 // router.get("",(req,res) => {
