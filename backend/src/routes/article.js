@@ -1,5 +1,7 @@
 const router = require("express").Router()
 const customError = require("../utils/customError")
+const loginGuard = require("../utils/loginGuard")
+const validater = require("../utils/validater")
 
 //게시글 더미 데이터
 const article = [
@@ -15,48 +17,6 @@ const user_like_data = [
     
 ]
 
-//정규표현식
-const regex = {
-    nameRegex :/^[a-zA-Z가-힣0-9]{2,20}$/, //영어,한글 가능 2-20글자
-    idRegex : /^[a-zA-Z0-9]{2,20}$/, // 영어, 숫자 가능 2-20글자
-    pwRegex : /^(?=.*[a-zA-Z])(?=.*\d)(?=.*[$@$!%*?&]?).{8,16}$/, //영어 숫자 필수, 특수문자 옵션, 8-16글자
-    ageRegex : /^[0-9]{1,2}$/,
-    genderRegex : /^(M|F)$/, //M, F 만 가능;
-    phoneRegex : /^010-[0-9]{4}-[0-9]{4}$/, // 010-xxxx-xxxx 가능
-    emailRegex : /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-    addressRegex : /^[A-Z][a-z]{1,}$/,
-    titleRegex : /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&\s]{2,40}$/, // 영어,한글,숫자,특수문자 가능 2-40글자
-    categoryRegex : /^(category1|category2|category3)$/, // 지정된 카테고리만 입력 가능
-    contentRegex : /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&\s]{2,}$/ // 영어, 한글, 숫자, 특수문자 가능 2글자 이상 자유
-}
-
-let checkAndFind = (field,input) =>{
-
-    if(!input) throw customError(`${field}를 입력해주세요`,400)
-
-    const fieldRegex = regex[`${field}Regex`];
-    // console.log(fieldRegex,"regex in function")
-    // console.log(input,"input value in fuction")
-    
-    // 유효성 통과 실패 -> 함수 단계에서 thow error
-    if(!fieldRegex.test(input))throw customError(`${field}의 형식이 올바르지 않습니다.`,400)
-    
-    //유효성 통과 성공 해당 값 탐색
-    const result = article.filter((data) => data[field] === input)
-    // console.log(result[0],"result fomr function")
-    
-    // 값 없음 -> false  반환 (회원 가입 가능 여부, 유저 정보 찾기(유저 없음))
-    if(result.length === 0)return false // 유효성 통과 성공했지만 값 없음 -> false
-
-    // 값 있음 -> 실제 값 반환 (중복 회원 방지, id,pw, 유저 정보 찾기(유저 있음))
-    return result[0][field] // 유효성 통과 및 값 있음 -> 값 반환
-}
-
-// 로그인 여부 체크
-let authCheck = (req) => {
-    // if(!req.session.userid || req.session.userid === undefined) throw customError("잘못된 접근입니다. 로그인해주세요", 403);
-    if(!req.session?.userid) throw customError("잘못된 접근입니다. 로그인해주세요", 403);
-}
 
 // 게시글 목록 불러오기 API
 router.get("",(req,res) => {
