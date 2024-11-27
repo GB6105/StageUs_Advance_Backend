@@ -1,9 +1,9 @@
 const router = require("express").Router()
 const customError = require("../utils/customError")
-const regx = require("../constants/regx")
 const wrapper = require("../utils/wrapper")
 const validater = require("../utils/validater")
 const authenticator = require("../utils/authenticator")
+const loginGuard = require("../utils/loginGuard")
 
 // 더미 데이터
 const userData = [
@@ -117,17 +117,8 @@ let checkValid2 = (input) =>{
 // }))
 
 //회원 가입 API v3
-router.post("",validater(req,res),wrapper((req,res)=>{
-    const {name, id, pw, age, gender, phone, email, address} = req.body;
-    // validater(req,res,"name",name);
-    // validater(req,res,"id",id);
-    // validater("id",id);
-    // validater("pw",pw);
-    // validater("age",age);
-    // validater("gender",gender);
-    // validater("phone",phone);
-    // validater("email",email);
-    // validater("address",address);
+router.post("", validater("name"),validater("id"),validater("pw"),validater("age"),validater("gender"),validater("phone"),validater("email"),validater("address"),wrapper((req,res)=>{
+
     res.status(200).send({
         "message" : "회원가입에 성a공하였습니다."
     })
@@ -159,24 +150,34 @@ router.post("",validater(req,res),wrapper((req,res)=>{
 // })
 
 //로그인 API v2
-router.get("",wrapper((req,res)=>{
-    const {id, pw} = req.body;
-    if(!id.match(regx.id)) throw customError("아이디가 올바르지 않습니다.", 401)
-    if(!pw.match(regx.pw)) throw customError("비밀번호가 올바르지 않습니다.", 401)
-    const checkId = userData.filter((data) =>data.id === id && data.pw === pw)  
-    if(checkId.length > 0){
-        req.session.userid = checkId[0].id; 
-        res.status(200).send({ 
-            "user": req.session.userid,
-            "message": `${req.session.userid}로 로그인에 성공하였습니다.`
-        })
-    }else{
-        res.status(401).send({
-            "message" : "아이디 혹은 비밀번호를 확인해주세요"
-        })
-    }
-}))
+// router.get("",wrapper((req,res)=>{
+//     const {id, pw} = req.body;
+//     if(!id.match(regx.id)) throw customError("아이디가 올바르지 않습니다.", 401)
+//     if(!pw.match(regx.pw)) throw customError("비밀번호가 올바르지 않습니다.", 401)
+//     const checkId = userData.filter((data) =>data.id === id && data.pw === pw)  
+//     if(checkId.length > 0){
+//         req.session.userid = checkId[0].id; 
+//         res.status(200).send({ 
+//             "user": req.session.userid,
+//             "message": `${req.session.userid}로 로그인에 성공하였습니다.`
+//         })
+//     }else{
+//         res.status(401).send({
+//             "message" : "아이디 혹은 비밀번호를 확인해주세요"
+//         })
+//     }
+// }))
 
+//로그인 API v2
+router.get("",validater("id"),validater("pw"),wrapper((req,res)=>{
+
+    req.session.userid = req.body.id;
+    res.status(200).send({
+        "user": req.session.userid,
+        "message": req.session.userid + "로 로그인에 성공하였습니다."
+    })
+
+}))
 //ID 찾기
 // router.get("/find-id",(req,res)=>{
 //     try{
@@ -204,90 +205,127 @@ router.get("",wrapper((req,res)=>{
 // })
 
 //ID 찾기 v2
-router.get("/find-id",wrapper((req,res)=>{
-    const {name, email} = req.body;
-    validater("name", name);
-    validater("email", email);
+// router.get("/find-id",wrapper((req,res)=>{
+//     const {name, email} = req.body;
+//     validater("name", name);
+//     validater("email", email);
 
-    // const userResult = userData.filter((data) => data.name === name && data.email === email)
-    // if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
-    // const userResultId = userResult[0].id;
+//     // const userResult = userData.filter((data) => data.name === name && data.email === email)
+//     // if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
+//     // const userResultId = userResult[0].id;
+//     res.status(200).send({
+//         "id":userResultId,
+//         "message": `ID는 ${userResultId} 입니다.`
+//     })  
+
+    
+// }))
+
+//ID 찾기 v2
+router.get("/find-id",validater("name"),validater("email"),wrapper((req,res)=>{
+
+    const userResult = userData.filter((data) => data.name === req.body.name && data.email === req.body.email)
+    if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
+    const userResultId = userResult[0].id;
+
     res.status(200).send({
         "id":userResultId,
         "message": `ID는 ${userResultId} 입니다.`
-    })  
+    })
 
-    
 }))
         
 // 사용자 PW 찾기
-router.get("/find-pw",(req,res) => {
-    try{
-        const {id, name, email} = req.body;
+// router.get("/find-pw",(req,res) => {
+//     try{
+//         const {id, name, email} = req.body;
 
-        // 값에 대해서 유효성 검사 진행
-        const checkId = checkAndFind("id",id)
-        const checkName = checkAndFind("name",name)
-        const checkEmail = checkAndFind("email",email)
+//         // 값에 대해서 유효성 검사 진행
+//         const checkId = checkAndFind("id",id)
+//         const checkName = checkAndFind("name",name)
+//         const checkEmail = checkAndFind("email",email)
 
-        // 값이 해당 정보에 있는 지 확인
-        const userResult = userData.filter((data) => data.id === checkId && data.name === checkName && data.email === checkEmail)
+//         // 값이 해당 정보에 있는 지 확인
+//         const userResult = userData.filter((data) => data.id === checkId && data.name === checkName && data.email === checkEmail)
 
-        if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
-        const userResultPw = userResult[0].pw;
-        res.status(201).send({
-                "pw":userResultPw,
-                "message": `비밀번호는 ${userResultPw} 입니다.`
-            })             
-    }catch(err){
-        res.status(err.status || 500).send({
-            "message" : err.message
-        })
-    }
+//         if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
+//         const userResultPw = userResult[0].pw;
+//         res.status(201).send({
+//                 "pw":userResultPw,
+//                 "message": `비밀번호는 ${userResultPw} 입니다.`
+//             })             
+//     }catch(err){
+//         res.status(err.status || 500).send({
+//             "message" : err.message
+//         })
+//     }
             
-})
+// })
+router.get("/find-pw",validater("id"),validater("name"),validater("email"),wrapper((req,res)=>{
+    const userResult = userData.filter((data) => data.id === req.body.id && data.name === req.body.name && data.email === req.body.email)
+
+    if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
+    const userResultPw = userResult[0].pw;
+    res.status(201).send({
+            "pw":userResultPw,
+            "message": `비밀번호는 ${userResultPw} 입니다.`
+        })    
+}))
         
 // 사용자 정보 확인 API (본인 정보는 아무것도 피요없음)
-router.get("/:id",(req,res) =>{ //:id 없는게 맞음
-    try{    
-        if(req.session.userid === req.params.id){ // 필요없는 부분 -> 세션만 있으면 다 가능
-            const findUser = userData.filter((data) => data.id === req.params.id)
-            res.status(201).send({
-                "user" : findUser[0]
-            })
-        }else{ // 필요없는 부분 -> 세션이 없을 때 안된다는 오류 구문정도는 추가해주면 됨
-            throw customError("해당 계정(게터) 정보를 찾을 수 없습니다.",404) 
-        }
+// router.get("/:id",(req,res) =>{ //:id 없는게 맞음
+//     try{    
+//         if(req.session.userid === req.params.id){ // 필요없는 부분 -> 세션만 있으면 다 가능
+//             const findUser = userData.filter((data) => data.id === req.params.id)
+//             res.status(201).send({
+//                 "user" : findUser[0]
+//             })
+//         }else{ // 필요없는 부분 -> 세션이 없을 때 안된다는 오류 구문정도는 추가해주면 됨
+//             throw customError("해당 계정(게터) 정보를 찾을 수 없습니다.",404) 
+//         }
 
-    }catch(err){
-        res.status(err.status || 500).send({
-            "message" : err.message
-        })
-    }    
-})
+//     }catch(err){
+//         res.status(err.status || 500).send({
+//             "message" : err.message
+//         })
+//     }    
+// })
+
+router.get("/:id",loginGuard, wrapper((req,res)=>{
+    const userId = req.session.userid;
+    res.status(201).send({
+        "user": userId
+    })
+}))
 
 // 사용자 계정 정보 수정
 
-router.patch("/:id",(req,res) => {
-    try{
-        if(req.session.userid == "" || req.session.userid !== req.params.id){
-            throw customError("잘못된 접근입니다. 로그인 후 사용해주세요",403);
-        }else{
-            const {name, id, pw, gender, phone, email, address } = req.body;
-            res.status(200).send({
-                "message": "성공"
-            })
-        }
+// router.patch("/:id",(req,res) => {
+//     try{
+//         if(req.session.userid == "" || req.session.userid !== req.params.id){
+//             throw customError("잘못된 접근입니다. 로그인 후 사용해주세요",403);
+//         }else{
+//             const {name, id, pw, gender, phone, email, address } = req.body;
+//             res.status(200).send({
+//                 "message": "성공"
+//             })
+//         }
 
-        // 로그인 모듈 첨가해주기
+//         // 로그인 모듈 첨가해주기
 
-    }catch(err){
-        res.status(err.status || 500).send({
-            "message":err.message
-        })
-    }
-})
+//     }catch(err){
+//         res.status(err.status || 500).send({
+//             "message":err.message
+//         })
+//     }
+// })
 
+//사용자 계정 정보 수정 API v2
+router.patch("/:id",loginGuard,wrapper((req,res)=>{
+    res.status(200).send({
+        "message": "수정에 성공하였습니다."
+    })
+}))
 
 // 사용자 정보 삭제
 router.delete("/:id", (req,res) => {
@@ -307,4 +345,10 @@ router.delete("/:id", (req,res) => {
     }
 })
     
+router.delete("/:id",loginGuard,wrapper((req,res)=>{
+    res.status(200).send({
+        "message": "회원 탈퇴가 완료되었습니다."
+    })
+}))
+
 module.exports = router;
