@@ -1,11 +1,11 @@
-const maria = require("mysql");
+const mariadb = require("mysql");
 
-const conn = maria.createConnection({
+const maria = mariadb.createConnection({
     host: 'localhost',
     port:3306,
-    user:'user',
-    password:'pwd',
-    database:'db name'
+    user:'GB',
+    password:'6105',
+    database:'bulletin_board'
 })
 
-module.exports = conn;
+module.exports = maria;

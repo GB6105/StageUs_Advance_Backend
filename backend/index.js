@@ -1,4 +1,6 @@
 const express = require("express");
+const maria = require("./database/connect/maria")
+maria.connect();
 const session = require("express-session");
 const app = express();
 app.use(express.json());
@@ -9,6 +11,18 @@ app.use(session({
     secure: false, //찾아보기
     maxAge: 24* 60 * 60 // 24시간 
 }))
+
+//
+app.get("/select", (req,res)=>{
+    maria.query('SELECT * FROM user',function(err,result,fields){
+        if(err){
+            console.log(err)
+        }
+        console.log(result);
+        res.send(result);
+    })
+})
+
 
 const userRouter = require("./src/routes/user")
 app.use("/user",userRouter) // 가장 윗 계층

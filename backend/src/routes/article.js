@@ -2,6 +2,8 @@ const router = require("express").Router()
 const customError = require("../utils/customError")
 const loginGuard = require("../utils/loginGuard")
 const validater = require("../utils/validater")
+const maria = require("./database/connect/maria")
+maria.connect();
 
 //게시글 더미 데이터
 const article = [
