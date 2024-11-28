@@ -13,10 +13,21 @@ const userData = [
 ];
 
 //회원 가입 API v3
-router.post("", validater("name"),validater("id"),validater("pw"),validater("age"),validater("gender"),validater("phone"),validater("email"),validater("address"),wrapper((req,res)=>{
-    res.status(200).send({
-        "message" : "회원가입에 성a공하였습니다."
+router.post("", validater("id"),validater("pw"),validater("name"),validater("gender"),validater("birthday"),validater("phone"),validater("email"),validater("address"),wrapper((req,res)=>{
+    maria.query("INSERT INTO user (id, password, name,  gender, birthday, phone_number,email,address) VALUES(?,?,?,?,?,?,?,?)",
+        [req.body.id, req.body.pw, req.body.name, req.body.gender, req.body.birthday, req.body.phone, req.body.email, req.body.address],(error, result) =>{
+        if(error){
+            return res.status(404).send({
+                "message": error.sqlMessage
+            })
+        }else{
+            res.status(200).send({
+                "user_info":result[0],
+                "message" : "회원가입에 성공하였습니다."
+            })
+        }    
     })
+    
 }))
 
 // 로그인 API
@@ -119,8 +130,17 @@ router.get("/find-pw",validater("id"),validater("name"),validater("email"),wrapp
 // 사용자 정보 확인 API 
 router.get("/:id",loginGuard, wrapper((req,res)=>{
     const userId = req.session.userid;
-    res.status(201).send({
-        "user": userId
+
+    maria.query("SELECT * FROM user WHERE id = ?",[userId],(error,result)=>{
+        if(error){
+            return res.status(404).send({
+                "message": error.sqlMessage
+            })
+        }else{
+            res.status(200).send({
+                "user_info" : result[0]
+            })
+        } 
     })
 }))
 
@@ -131,9 +151,38 @@ router.patch("/:id",loginGuard,wrapper((req,res)=>{
     })
 }))
 
+
+router.put("/:id", validater("id"),validater("pw"),validater("name"),validater("phone"),validater("email"),validater("address"),wrapper((req,res)=>{
+    const userId = req.session.userid;
+
+    maria.query("UPDATE user SET id = ? , password = ?, name = ?, phone_number = ?, email = ?, address = ? WHERE id = ?",
+        [req.body.id, req.body.pw, req.body.name,  req.body.phone, req.body.email, req.body.address, userId],(error, result) =>{
+        if(error){
+            return res.status(404).send({
+                "message": error.sqlMessage
+            })
+        }else{
+            res.status(200).send({
+                "message" : "정보가 수정되었습니다."
+            })
+        }    
+    })
+    
+}))
+
 router.delete("/:id",loginGuard,wrapper((req,res)=>{
-    res.status(200).send({
-        "message": "회원 탈퇴가 완료되었습니다."
+    const userId = req.session.userid;
+
+    maria.query("DELETE FROM user WHERE id = ?",[userId],(error,result)=>{
+        if(error){
+            return res.status(404).send({
+                "message": error.sqlMessage
+            })
+        }else{
+            res.status(200).send({
+                "message": "회원탈퇴가 완료되었습니다."
+            })
+        } 
     })
 }))
 
