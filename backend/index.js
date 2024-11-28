@@ -3,7 +3,6 @@ const maria = require("./database/connect/maria")
 maria.connect();
 const session = require("express-session");
 const app = express();
-
 app.use(express.json());
 app.use(session({
     secret: 'secret-key',
@@ -15,7 +14,7 @@ app.use(session({
 
 //
 app.get("/select", (req,res)=>{
-    maria.query('SELECT * FROM user',function(err,result,fds){
+    maria.query('SELECT * FROM user',function(err,result,fields){
         if(err){
             console.log(err)
         }

@@ -1,9 +1,9 @@
 const router = require("express").Router()
 const customError = require("../utils/customError")
-const wrapper = require("../utils/wrapper")
-const validater = require("../utils/validater")
 const loginGuard = require("../utils/loginGuard")
-
+const validater = require("../utils/validater")
+const maria = require("./database/connect/maria")
+maria.connect();
 
 //게시글 더미 데이터
 const article = [
@@ -21,63 +21,45 @@ const user_like_data = [
 
 
 // 게시글 목록 불러오기 API
-// router.get("",(req,res) => {
-//     try{
-//         const page_number = req.query.page;
-//         console.log(req.session.userid)
-//         authCheck(req);
+router.get("",(req,res) => {
+    try{
+        const page_number = req.query.page;
+        console.log(req.session.userid)
+        authCheck(req);
 
-//         if(!article || article.length === 0) throw customError("아직 게시글이 업습니다.",404)
-//         res.status(201).send({
-//             "article_list": article
-//         })
-//     }catch(err){
-//         res.status(err.status || 500).send({
-//             "messge" : err.message
-//         })
-//     }
-// })
-
-router.get("",loginGuard,wrapper((req,res)=>{
-    const pageNumber = req.query.page;
-
-    res.status(200).send({
-        "article_list": "result"
-    })
-
-}))
+        if(!article || article.length === 0) throw customError("아직 게시글이 업습니다.",404)
+        res.status(201).send({
+            "article_list": article
+        })
+    }catch(err){
+        res.status(err.status || 500).send({
+            "messge" : err.message
+        })
+    }
+})
 
 // 게시글 작성 API
-// router.post("",(req,res) => {
-//     try{
-//         const {title, category_name, content} = req.body 
-//         const writer_id = req.session.userid;//로그인 안하고 api 호출시 에러 메시지 출력 안하는 문제가ㅋ
-//         authCheck(req);
-//         console.log("fien")
-//         //추후 forEach로 수정 해볼듯
-//         checkAndFind("title",title);
-//         checkAndFind("category",category_name);
-//         checkAndFind("content", content);
+router.post("",(req,res) => {
+    try{
+        const {title, category_name, content} = req.body 
+        const writer_id = req.session.userid;//로그인 안하고 api 호출시 에러 메시지 출력 안하는 문제가ㅋ
+        authCheck(req);
+        console.log("fien")
+        //추후 forEach로 수정 해볼듯
+        checkAndFind("title",title);
+        checkAndFind("category",category_name);
+        checkAndFind("content", content);
         
-//         // 값 승인 되면 데베로 등록
-//         res.status(200).send({
-//             "message": "게시글 작성이 완료되었습니다."
-//         })
-//     }catch(err){
-//         res.status(err.status || 500).send({
+        // 값 승인 되면 데베로 등록
+        res.status(200).send({
+            "message": "게시글 작성이 완료되었습니다."
+        })
+    }catch(err){
+        res.status(err.status || 500).send({
 
-//         })
-//     }
-// })
-
-router.post("",loginGuard,validater("title"),validater("category"),validater("content"),wrapper((req,res)=>{
-
-    //DB처리 파트
-    res.statu(200).send({
-        "message": "게시글 작성이 완료되었습니다."
-    })
-
-}))
+        })
+    }
+})
 
 // 게시글 좋아요 해제
 router.delete("/:idx/like/:likeidx",(req,res) => {
