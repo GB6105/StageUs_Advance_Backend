@@ -3,6 +3,7 @@ const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 const validater = require("../utils/validater")
 const loginGuard = require("../utils/loginGuard")
+const maria = require("../../database/connect/maria");
 
 // 더미 데이터
 const userData = [
@@ -63,38 +64,56 @@ router.post("", validater("name"),validater("id"),validater("pw"),validater("age
 
 //로그인 API v2
 router.get("",validater("id"),validater("pw"),wrapper((req,res)=>{
-    req.session.userid = req.body.id;
-    res.status(200).send({
-        "user": req.session.userid,
-        "message": req.session.userid + "로 로그인에 성공하였습니다."
+    
+    maria.query('SELECT password FROM user WHERE id = ?', [req.body.id],(error,result)=>{
+        console.log(result)
+        if(result.length>0 && result[0].password == req.body.pw){
+            req.session.userid = req.body.id;
+            return res.status(200).send({
+                "user": req.session.userid,
+                "message": req.session.userid + "로 로그인에 성공하였습니다."
+            })
+        }else{
+            res.status(404).send({
+                "message": "해당 사용자 정보를 찾을 수 없습니다."
+            })
+        }
     })
-
 }))
 
 //ID 찾기 v2
 router.get("/find-id",validater("name"),validater("email"),wrapper((req,res)=>{
 
-    const userResult = userData.filter((data) => data.name === req.body.name && data.email === req.body.email)
-    if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
-    const userResultId = userResult[0].id;
-
-    res.status(200).send({
-        "id":userResultId,
-        "message": `ID는 ${userResultId} 입니다.`
+    maria.query('SELECT id FROM user WHERE name = ? AND email = ?',[req.body.name,req.body.email],(error,result)=>{
+        if(result.length >0){
+            res.status(200).send({
+                "id":result[0].id,
+                "message": `ID는 ${result[0].id} 입니다.`
+            })
+        }else{
+            res.status(404).send({
+                "message": "존재하지 않는 계정입니다."
+            })
+        }
     })
-
 }))
         
 //PW 찾기 
 router.get("/find-pw",validater("id"),validater("name"),validater("email"),wrapper((req,res)=>{
-    const userResult = userData.filter((data) => data.id === req.body.id && data.name === req.body.name && data.email === req.body.email)
 
-    if(!userResult || userResult.length === 0) throw customError("해당 사용자 정보를 찾을 수 없습니다.",404)
-    const userResultPw = userResult[0].pw;
-    res.status(201).send({
-            "pw":userResultPw,
-            "message": `비밀번호는 ${userResultPw} 입니다.`
-        })    
+    maria.query('SELECT password FROM user WHERE id =? AND name = ? AND email = ?',[req.body.id, req.body.name, req.body.email],(error,result)=>{
+        console.log(result)
+        if(result.length >0){
+            res.status(200).send({
+                "id":result[0].pw,
+                "message": `PW는 ${result[0].password} 입니다.`
+            })
+        }else{
+            res.status(404).send({
+                "message": "존재하지 않는 계정입니다."
+            })
+        }
+    })
 }))
         
 // 사용자 정보 확인 API 
