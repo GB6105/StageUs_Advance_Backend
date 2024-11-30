@@ -4,29 +4,31 @@ const regex = require("../constants/regx")
 const wrapper = require("../utils/wrapper")
 const validater = require("../utils/validater")
 const authenticator = require("../utils/authenticator")
+const mysql = require("../../database/connect/mysql");
+const loginGuard = require("../utils/loginGuard")
 
 //게시글 더미 데이터
-const article = [
-    {"idx" : 1, "user_id": "test1", "title":"article1", "category_name" : "category1", "view":111, "content":"test article 1", "like": 11, "creat_at": "2024-11-11"},
-    {"idx" : 2, "user_id": "test2", "title":"article2", "category_name" : "category2", "view":222, "content":"test article 2", "like": 22, "creat_at": "2024-11-22"},
-    {"idx" : 3, "user_id": "test3", "title":"article3", "category_name" : "category3", "view":333, "content":"test article 3", "like": 33, "creat_at": "2024-11-33"}
-]
+// const article = [
+//     {"idx" : 1, "user_id": "test1", "title":"article1", "category_name" : "category1", "view":111, "content":"test article 1", "like": 11, "creat_at": "2024-11-11"},
+//     {"idx" : 2, "user_id": "test2", "title":"article2", "category_name" : "category2", "view":222, "content":"test article 2", "like": 22, "creat_at": "2024-11-22"},
+//     {"idx" : 3, "user_id": "test3", "title":"article3", "category_name" : "category3", "view":333, "content":"test article 3", "like": 33, "creat_at": "2024-11-33"}
+// ]
 
-const comment = [
-    {"idx" : 1, "article_idx" : 1, "user_id": "test1","content": "comment1-1","creat_at": "2024-11-11"},
-    {"idx" : 2, "article_idx" : 1, "user_id": "test2","content": "comment1-2","creat_at": "2024-11-22"},
-    {"idx" : 3, "article_idx" : 1, "user_id": "test3","content": "comment1-3","creat_at": "2024-11-31"},
-    {"idx" : 4, "article_idx" : 2, "user_id": "test1","content": "comment2-1","creat_at": "2024-12-12"},
-    {"idx" : 5, "article_idx" : 2, "user_id": "test2","content": "comment2-2","creat_at": "2024-12-22"},
-    {"idx" : 6, "article_idx" : 2, "user_id": "test3","content": "comment2-3","creat_at": "2024-12-31"}
-]
+// const comment = [
+//     {"idx" : 1, "article_idx" : 1, "user_id": "test1","content": "comment1-1","creat_at": "2024-11-11"},
+//     {"idx" : 2, "article_idx" : 1, "user_id": "test2","content": "comment1-2","creat_at": "2024-11-22"},
+//     {"idx" : 3, "article_idx" : 1, "user_id": "test3","content": "comment1-3","creat_at": "2024-11-31"},
+//     {"idx" : 4, "article_idx" : 2, "user_id": "test1","content": "comment2-1","creat_at": "2024-12-12"},
+//     {"idx" : 5, "article_idx" : 2, "user_id": "test2","content": "comment2-2","creat_at": "2024-12-22"},
+//     {"idx" : 6, "article_idx" : 2, "user_id": "test3","content": "comment2-3","creat_at": "2024-12-31"}
+// ]
 
-//접근을 어떻게 할 것인지가 중요할 듯 (직접 유저 아이디 속성을 넣어서 비교를 해줄 것인지 DB구조상 join이나 연결된 형식을 사용할 것인지)
-const user_comment_like_data =[
-    {"idx" : 1, "user_id":"test1", "comment_idx" : 1, "liked": 0 },
-    {"idx" : 2, "user_id":"test1", "comment_idx" : 2, "liked": 1 },
-    {"idx" : 3, "user_id":"test1", "comment_idx" : 3, "liked": 0 }
-]
+// //접근을 어떻게 할 것인지가 중요할 듯 (직접 유저 아이디 속성을 넣어서 비교를 해줄 것인지 DB구조상 join이나 연결된 형식을 사용할 것인지)
+// const user_comment_like_data =[
+//     {"idx" : 1, "user_id":"test1", "comment_idx" : 1, "liked": 0 },
+//     {"idx" : 2, "user_id":"test1", "comment_idx" : 2, "liked": 1 },
+//     {"idx" : 3, "user_id":"test1", "comment_idx" : 3, "liked": 0 }
+// ]
 
 //게시글 찾기 
 
@@ -47,7 +49,7 @@ let findComment = (req) => {
 //댓글 좋아요 해제하기
 router.delete("/:commentidx/like/:likeidx",(req,res) => {
     try{
-        authCheck(req);
+        //authCheck(req);
         findArticle(req);
         findComment(req);
 
@@ -84,7 +86,7 @@ router.post("/:commentidx/like",(req,res) => {
     try{
 
         //body로 게시글 idx 받아오셈
-        authCheck(req);
+        //authCheck(req);
         findArticle(req);
         findComment(req);
 
@@ -120,7 +122,7 @@ router.post("/:commentidx/like",(req,res) => {
 //댓글 수정하기
 router.put("/:commentidx",(req,res) => {
     try{
-        authCheck(req);
+       // authCheck(req);
         findArticle(req);
         const commentData = findComment(req);
         
@@ -148,7 +150,7 @@ router.put("/:commentidx",(req,res) => {
 //댓글 삭제하기
 router.delete("/:commentidx",(req,res) => {
     try{
-        authCheck(req);
+        //authCheck(req);
         findArticle(req);
         const commentData = findComment(req);
         
@@ -175,7 +177,7 @@ router.delete("/:commentidx",(req,res) => {
 router.get("/:idx/comment",(req,res) => {
 
     try{
-        authCheck(req);
+        //authCheck(req);
         //body로 article idx를 받아와도 됨 
         const result = findComment(req);
         res.send({
@@ -191,27 +193,48 @@ router.get("/:idx/comment",(req,res) => {
 })
 
 //댓글 작성하기
-router.post("/:idx/comment",(req,res) => {
-    try{
-        authCheck(req);
-        findArticle(req);
-        const content = req.body.content;
-        const writer_id = req.session.userid;
+//router.post("",(req,res) => {
+//
+//     try{
+//         //authCheck(req);
+//         findArticle(req);
+//         const content = req.body.content;
+//         const writer_id = req.session.userid;
+        
+//         checkAndFind("content",content);
+//         checkAndFind("id",writer_id);
+        
+//         //DB 통해서 댓글 데이터 입력
+//         res.status(200).send({
+//             "message": "댓글이 등록되었습니다."
+//         })
+        
+//     }catch(err){
+//         res.status(err.status||500).send({
+//             "message" : err.message
+//         })
+//     }
+// })
 
-        checkAndFind("content",content);
-        checkAndFind("id",writer_id);
 
-        //DB 통해서 댓글 데이터 입력
-        res.status(200).send({
-            "message": "댓글이 등록되었습니다."
-        })
-
-    }catch(err){
-        res.status(err.status||500).send({
-            "message" : err.message
-        })
+router.post("",loginGuard,validater("content"),wrapper(async (req,res)=>{
+        try{
+            const postid = req.body.postid;
+            const userid = req.session.userid;
+            const sql = "INSERT INTO comment (post_idx, user_idx, content) VALUES(?,?,?)";
+            const values = [postid,userid,req.body.content];
+        
+            const [result] = await mysql.query(sql, values);
+            res.status(200).send({
+                "message": "댓글이 등록되었습니다."
+            })
+        }catch(err){
+            res.send({
+                "message": err.message
+            })
+        }
     }
-})
 
+))
 
 module.exports = router;
