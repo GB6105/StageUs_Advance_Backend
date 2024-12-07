@@ -26,67 +26,11 @@ const psql = require("../constants/psql")
 //     //res.
 // }))
 
-// // 로그인 API
-// // router.get("",(req,res) => {
-// //     const {id, pw} = req.body;
-// //     try{
-// //         if(!regex["idRegex"].test(id))throw customError("아이디가 올바르지 않습니다.", 400)
-// //         if(!regex["pwRegex"].test(pw))throw customError("비밀번호가 올바르지 않습니다.", 400)
-// //         const checkId = userData.filter((data) =>data.id === id && data.pw === pw)  
-// //         if(checkId != ""){
-// //             req.session.userid = checkId[0].id; // 유저 아이디만 세션에 저장
-// //             return res.status(200).send({ // 함수를 끝낸는 기능이 없는 send 이므로 return 해주여야함 (그걸 이용해서 나눠서 응답만 보내고 하기도함) 여기서 return피료없음
-// //                 "user": req.session.userid,
-// //                 "message": `${req.session.userid}로 로그인에 성공하였습니다.`
-// //             })
-// //         }else{
-// //             throw customError("해당 사용자 정보를 찾을 수 없습니다.",404);
-// //         }
+router.post("", validater("id"),validater("pw"),validater("name"),validater("gender"),validater("birthday"),validater("phone"),validater("email"),validater("nation"),wrapper(async (req,res)=>{
+    const {id, pw, name, gedner, birthday, } = req.body;
+    const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, address VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthdya])
 
-// //     }catch(err){
-// //         res.status(err.status || 500).send({
-// //             "message": err.message
-// //         })
-// //     }
-// // })
-
-// //로그인 API v2
-// // router.get("",wrapper((req,res)=>{
-// //     const {id, pw} = req.body;
-// //     if(!id.match(regx.id)) throw customError("아이디가 올바르지 않습니다.", 401)
-// //     if(!pw.match(regx.pw)) throw customError("비밀번호가 올바르지 않습니다.", 401)
-// //     const checkId = userData.filter((data) =>data.id === id && data.pw === pw)  
-// //     if(checkId.length > 0){
-// //         req.session.userid = checkId[0].id; 
-// //         res.status(200).send({ 
-// //             "user": req.session.userid,
-// //             "message": `${req.session.userid}로 로그인에 성공하였습니다.`
-// //         })
-// //     }else{
-// //         res.status(401).send({
-// //             "message" : "아이디 혹은 비밀번호를 확인해주세요"
-// //         })
-// //     }
-// // }))
-
-// //로그인 API v2
-// router.get("",validater("id"),validater("pw"),wrapper((req,res)=>{
-    
-//     maria.query('SELECT password FROM user WHERE id = ?', [req.body.id],(error,result)=>{
-//         console.log(result)
-//         if(result.length>0 && result[0].password == req.body.pw){
-//             req.session.userid = req.body.id;
-//             return res.status(200).send({
-//                 "user": req.session.userid,
-//                 "message": req.session.userid + "로 로그인에 성공하였습니다."
-//             })
-//         }else{
-//             res.status(404).send({
-//                 "message": "해당 사용자 정보를 찾을 수 없습니다."
-//             })
-//         }
-//     })
-// }))
+}))
 
 router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (req,res)=>{
     const {id, pw} = req.body;
@@ -107,30 +51,7 @@ router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (re
     }
 }))
 
-// router.get("",validater("id",regx.id),validater("pw",regx.pw), async (req,res)=>{
-//     const {id, pw} = req.body;
-//     console.log(req.body.id, req.body.pw)
-//     try{
-//         const loginResult = await psql.query('SELECT * FROM account.list WHERE id = $1 AND pw = $2',[id,pw])
-//         console.log(loginResult.rows[0])
-//         if(loginResult.rows.length > 0){
-//             res.status(200).send({
-//                 "message": "로그인에 성공하였습니다."
-//             })
-//         }
-//         else{
-//             res.status(404).send({
-//                 "message": "해당 계정이 존재하지 않습니다."
-//             })
-//         }
 
-
-//     }catch(err){
-//         res.status(err.statusCode || 500).send({
-//             "message": err.message
-//         })
-//     }
-// })
 // //ID 찾기 v2
 // router.get("/find-id",validater("name"),validater("email"),wrapper((req,res)=>{
 
