@@ -1,50 +1,26 @@
 const router = require("express").Router()
 const customError = require("../utils/customError")
-const regex = require("../constants/regx")
 const wrapper = require("../utils/wrapper")
-const validater = require("../utils/validater")
-const authenticator = require("../utils/authenticator")
-const mysql = require("../../database/connect/mysql");
-const loginGuard = require("../utils/loginGuard")
+const validater = require("../middlewares/validater")
+const authenticator = require("../middlewares/authenticator")
+const loginGuard = require("../middlewares/loginGuard")
 
-//게시글 더미 데이터
-// const article = [
-//     {"idx" : 1, "user_id": "test1", "title":"article1", "category_name" : "category1", "view":111, "content":"test article 1", "like": 11, "creat_at": "2024-11-11"},
-//     {"idx" : 2, "user_id": "test2", "title":"article2", "category_name" : "category2", "view":222, "content":"test article 2", "like": 22, "creat_at": "2024-11-22"},
-//     {"idx" : 3, "user_id": "test3", "title":"article3", "category_name" : "category3", "view":333, "content":"test article 3", "like": 33, "creat_at": "2024-11-33"}
-// ]
-
-// const comment = [
-//     {"idx" : 1, "article_idx" : 1, "user_id": "test1","content": "comment1-1","creat_at": "2024-11-11"},
-//     {"idx" : 2, "article_idx" : 1, "user_id": "test2","content": "comment1-2","creat_at": "2024-11-22"},
-//     {"idx" : 3, "article_idx" : 1, "user_id": "test3","content": "comment1-3","creat_at": "2024-11-31"},
-//     {"idx" : 4, "article_idx" : 2, "user_id": "test1","content": "comment2-1","creat_at": "2024-12-12"},
-//     {"idx" : 5, "article_idx" : 2, "user_id": "test2","content": "comment2-2","creat_at": "2024-12-22"},
-//     {"idx" : 6, "article_idx" : 2, "user_id": "test3","content": "comment2-3","creat_at": "2024-12-31"}
-// ]
-
-// //접근을 어떻게 할 것인지가 중요할 듯 (직접 유저 아이디 속성을 넣어서 비교를 해줄 것인지 DB구조상 join이나 연결된 형식을 사용할 것인지)
-// const user_comment_like_data =[
-//     {"idx" : 1, "user_id":"test1", "comment_idx" : 1, "liked": 0 },
-//     {"idx" : 2, "user_id":"test1", "comment_idx" : 2, "liked": 1 },
-//     {"idx" : 3, "user_id":"test1", "comment_idx" : 3, "liked": 0 }
-// ]
 
 //게시글 찾기 
 
-let findArticle = (req) => {
-    const article_idx = req.params.idx;
-    const result_article = article.filter((article) => article.idx == article_idx)
-    if(!result_article || result_article.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
-    return result_article[0]
-}
+// let findArticle = (req) => {
+//     const article_idx = req.params.idx;
+//     const result_article = article.filter((article) => article.idx == article_idx)
+//     if(!result_article || result_article.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
+//     return result_article[0]
+// }
 
-let findComment = (req) => {
-    const recent_article = findArticle(req);
-    const result_comment = comment.filter((comment) => comment.article_idx == recent_article.idx)
-    if(!result_comment || result_comment.length === 0) throw customError("댓글이 존재하지 않습니다.",404)
-    return result_comment
-}
+// let findComment = (req) => {
+//     const recent_article = findArticle(req);
+//     const result_comment = comment.filter((comment) => comment.article_idx == recent_article.idx)
+//     if(!result_comment || result_comment.length === 0) throw customError("댓글이 존재하지 않습니다.",404)
+//     return result_comment
+// }
 
 //댓글 좋아요 해제하기
 router.delete("/:commentidx/like/:likeidx",(req,res) => {

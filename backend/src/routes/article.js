@@ -1,24 +1,8 @@
 const router = require("express").Router()
 const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
-const validater = require("../utils/validater")
-const loginGuard = require("../utils/loginGuard")
-const maria = require("../../database/connect/maria");
-
-
-//게시글 더미 데이터
-// const article = [
-//     {"idx" : 1, "user_id": "test1", "title":"article1", "category_name" : "category1", "view":111, "content":"test article 1", "like": 11, "creat_at": "2024-11-11"},
-//     {"idx" : 2, "user_id": "test2", "title":"article2", "category_name" : "category2", "view":222, "content":"test article 2", "like": 22, "creat_at": "2024-11-22"},
-//     {"idx" : 3, "user_id": "test3", "title":"article3", "category_name" : "category3", "view":333, "content":"test article 3", "like": 33, "creat_at": "2024-11-33"}
-// ]
-
-// const user_like_data = [
-//     {"idx" : 1, "article_idx" : 1, "liked": 0 },
-//     {"idx" : 2, "article_idx" : 2, "liked": 1 },
-//     {"idx" : 3, "article_idx" : 3, "liked": 0 }
-    
-// ]
+const validater = require("../middlewares/validater")
+const loginGuard = require("../middlewares/loginGuard")
 
 
 // 게시글 목록 불러오기 API
