@@ -26,10 +26,28 @@ const psql = require("../constants/psql")
 //     //res.
 // }))
 
-router.post("", validater("id"),validater("pw"),validater("name"),validater("gender"),validater("birthday"),validater("phone"),validater("email"),validater("nation"),wrapper(async (req,res)=>{
-    const {id, pw, name, gedner, birthday, } = req.body;
-    const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, address VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthdya])
+router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender),validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation),wrapper(async (req,res)=>{
+    const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
+    // const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, address VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation])
+    const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation]).catch(err=>{
+        console.error("query failed");
+        res.status(500).send({
+            "message": "sql error!"
+        })
+        throw err;
+    })
 
+    if(signUpResult.rows.length > 0){
+        res.status(200).send({
+            "message": "회원가입에 성공하였습니다."
+        })
+    }else{
+        res.status(400).send({
+            "message": "회원가입을 진행할 수 없습니다."
+        })
+    }
+
+    
 }))
 
 router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (req,res)=>{
