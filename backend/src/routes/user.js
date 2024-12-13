@@ -51,7 +51,8 @@ const psql = require("../constants/psql")
 // })
 
 //wrapper를 async로 해서 구현
-router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender),validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
+router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender)
+,validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
 ,wrapper(async (req,res)=>{
     const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
 
@@ -65,7 +66,6 @@ router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name"
 }))
 
 //로그인 API 
-
 router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (req,res)=>{
     const {id, pw} = req.body;
     const loginResult = await psql.query('SELECT * FROM account.list WHERE id = $1 AND pw = $2',[id,pw]).catch(err =>{
@@ -85,11 +85,10 @@ router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (re
     }
 }))
 
-
 // //ID 찾기 v2
 router.get("/find-id",validater("name",regx.name),validater("email",regx.email),wrapper(async (req,res)=>{
     const {name, email} = req.body;
-    const findIdResult = await psql.query("SELECT id FROM account.list WHERE name = $1 AND email = $2",[req.body.name,req.body.email])
+    const findIdResult = await psql.query("SELECT id FROM account.list WHERE name = $1 AND email = $2",[name, email])
     if(findIdResult.rows[0]){
         res.status(200).send({
             "message": "사용자 id는 " + findIdResult.rows[0].id + " 입니다."
@@ -104,7 +103,7 @@ router.get("/find-id",validater("name",regx.name),validater("email",regx.email),
 // //PW 찾기 
 router.get("/find-pw",validater("id",regx.id), validater("name",regx.name),validater("email",regx.email),wrapper(async (req,res)=>{
     const {id, name, email} = req.body;
-    const findPwResult = await psql.query("SELECT pw FROM account.list WHERE id = $1 AND name = $2 AND email = $3",[req.body.id, req.body.name,req.body.email])
+    const findPwResult = await psql.query("SELECT pw FROM account.list WHERE id = $1 AND name = $2 AND email = $3",[id,name,email])
     if(findPwResult.rows[0]){
         res.status(200).send({
             "message": "사용자 비밀번호는 " + findPwResult.rows[0].pw + " 입니다."
@@ -115,65 +114,62 @@ router.get("/find-pw",validater("id",regx.id), validater("name",regx.name),valid
         })
     }
 }))
-
         
 // // 사용자 정보 확인 API 
-// router.get("",loginGuard, wrapper((req,res)=>{
-//     const userId = req.session.userid;
-
-//     maria.query("SELECT * FROM user WHERE id = ?",[userId],(error,result)=>{
-//         if(error){
-//             return res.status(404).send({
-//                 "message": error.sqlMessage
-//             })
-//         }else{
-//             res.status(200).send({
-//                 "user_info" : result[0]
-//             })
-//         }
-//     })
-// }))
-
-// //사용자 계정 정보 수정 API v2
-// // router.patch("/:id",loginGuard,wrapper((req,res)=>{
-// //     res.status(200).send({
-// //         "message": "수정에 성공하였습니다."
-// //     })
-// // }))
+router.get("/my", loginGuard, wrapper(async (req,res)=>{
+    const userId = req.session.userid;
+    console.log(userId);
+    const userInfo = await psql.query("SELECT * FROM account.list WHERE id = $1",[userId])
+    console.log(userInfo)
+    res.status(200).send({
+        "userInfo":userInfo.rows[0]
+    })
+}))
 
 
-// router.put("", validater("id"),validater("pw"),validater("name"),validater("phone"),validater("email"),validater("address"),wrapper((req,res)=>{
-//     const userId = req.session.userid;
+// //사용자 계정 정보 수정 API
+router.put("/my", loginGuard,validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender)
+,validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
+,wrapper(async (req,res)=>{
+    const userId = req.session.userid;
+    const {id,pw,name,gender,birthday,phone,email,nation} = req.body;
 
-//     maria.query("UPDATE user SET id = ? , password = ?, name = ?, phone_number = ?, email = ?, address = ? WHERE id = ?",
-//         [req.body.id, req.body.pw, req.body.name,  req.body.phone, req.body.email, req.body.address, userId],(error, result) =>{
-//         if(error){
-//             return res.status(404).send({
-//                 "message": error.sqlMessage
-//             })
-//         }else{
-//             res.status(200).send({
-//                 "message" : "정보가 수정되었습니다."
-//             })
-//         }    
-//     })
-    
-// }))
+    const userInfoEdit = await psql.query("UPDATE account.list SET id = $1 , pw = $2, name = $3, gender = $4, birthday = $5, phone = $6, email = $7, nation = $8 WHERE id = $9",[id, pw, name, gender, birthday, phone, email, nation, userId])
+
+    if(userInfoEdit.rowCount > 0){
+        res.status(200).send({
+            "message": "회원정보 수정이 완료되었습니다."
+        })
+    }
+}))
+                        
+
 
 // router.delete("",loginGuard,wrapper((req,res)=>{
-//     const userId = req.session.userid;
-
-//     maria.query("DELETE FROM user WHERE id = ?",[userId],(error,result)=>{
-//         if(error){
-//             return res.status(404).send({
-//                 "message": error.sqlMessage
-//             })
-//         }else{
+    //     const userId = req.session.userid;
+    
+    //     maria.query("DELETE FROM user WHERE id = ?",[userId],(error,result)=>{
+        //         if(error){
+            //             return res.status(404).send({
+                //                 "message": error.sqlMessage
+                //             })
+                //         }else{
 //             res.status(200).send({
 //                 "message": "회원탈퇴가 완료되었습니다."
 //             })
 //         } 
 //     })
 // }))
+
+router.delete("/my",loginGuard, wrapper(async (req,res)=>{
+    const userId = req.session.userId;
+    const userDeleteResult = await psql.query("DELETE FROM account.list WHERE id = $1",[userId])
+    if(userDeleteResult.rowCount > 0){
+        res.status(200).send({
+            "message": "회원 탈퇴가 완료되었습니다."
+        })
+    }
+}))
+
 
 module.exports = router;
