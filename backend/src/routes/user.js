@@ -26,29 +26,45 @@ const psql = require("../constants/psql")
 //     //res.
 // }))
 
-router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender),validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation),wrapper(async (req,res)=>{
-    const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
-    // const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, address VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation])
-    const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation]).catch(err=>{
-        console.error("query failed");
-        res.status(500).send({
-            "message": "sql error!"
-        })
-        throw err;
-    })
 
-    if(signUpResult.rows.length > 0){
+//회원 가입 API
+//wrapper 없이 구현현
+// router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender),validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
+// ,async (req,res)=>{
+//     const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
+//     try{
+//         const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation])
+//         if(signUpResult.rowCount > 0){
+//             res.status(200).send({
+//                 "message": "회원가입에 성공하였습니다."
+//             })
+//         }else{
+//             res.status(500).send({
+//                 "message": "알 수 없는 에러"
+//             })
+//         }
+//     }catch(err){
+//         res.status(409).send({
+//             "message": err.message
+//         })
+//     }
+// })
+
+//wrapper를 async로 해서 구현
+router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender),validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
+,wrapper(async (req,res)=>{
+    const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
+
+    const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation])
+    if(signUpResult.rowCount > 0){
         res.status(200).send({
             "message": "회원가입에 성공하였습니다."
         })
-    }else{
-        res.status(400).send({
-            "message": "회원가입을 진행할 수 없습니다."
-        })
     }
 
-    
 }))
+
+//로그인 API 
 
 router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (req,res)=>{
     const {id, pw} = req.body;
@@ -71,39 +87,35 @@ router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (re
 
 
 // //ID 찾기 v2
-// router.get("/find-id",validater("name"),validater("email"),wrapper((req,res)=>{
+router.get("/find-id",validater("name",regx.name),validater("email",regx.email),wrapper(async (req,res)=>{
+    const {name, email} = req.body;
+    const findIdResult = await psql.query("SELECT id FROM account.list WHERE name = $1 AND email = $2",[req.body.name,req.body.email])
+    if(findIdResult.rows[0]){
+        res.status(200).send({
+            "message": "사용자 id는 " + findIdResult.rows[0].id + " 입니다."
+        })
+    }else{
+        res.status(404).send({
+            "message": "해당 사용자 정보를 찾을 수 없습니다.."
+        })
+    }
+}))
 
-//     maria.query('SELECT id FROM user WHERE name = ? AND email = ?',[req.body.name,req.body.email],(error,result)=>{
-//         if(result.length >0){
-//             res.status(200).send({
-//                 "id":result[0].id,
-//                 "message": `ID는 ${result[0].id} 입니다.`
-//             })
-//         }else{
-//             res.status(404).send({
-//                 "message": "존재하지 않는 계정입니다."
-//             })
-//         }
-//     })
-// }))
-        
 // //PW 찾기 
-// router.get("/find-pw",validater("id"),validater("name"),validater("email"),wrapper((req,res)=>{
+router.get("/find-pw",validater("id",regx.id), validater("name",regx.name),validater("email",regx.email),wrapper(async (req,res)=>{
+    const {id, name, email} = req.body;
+    const findPwResult = await psql.query("SELECT pw FROM account.list WHERE id = $1 AND name = $2 AND email = $3",[req.body.id, req.body.name,req.body.email])
+    if(findPwResult.rows[0]){
+        res.status(200).send({
+            "message": "사용자 비밀번호는 " + findPwResult.rows[0].pw + " 입니다."
+        })
+    }else{
+        res.status(404).send({
+            "message": "해당 사용자 정보를 찾을 수 없습니다.."
+        })
+    }
+}))
 
-//     maria.query('SELECT password FROM user WHERE id =? AND name = ? AND email = ?',[req.body.id, req.body.name, req.body.email],(error,result)=>{
-//         console.log(result)
-//         if(result.length >0){
-//             res.status(200).send({
-//                 "id":result[0].pw,
-//                 "message": `PW는 ${result[0].password} 입니다.`
-//             })
-//         }else{
-//             res.status(404).send({
-//                 "message": "존재하지 않는 계정입니다."
-//             })
-//         }
-//     })
-// }))
         
 // // 사용자 정보 확인 API 
 // router.get("",loginGuard, wrapper((req,res)=>{
