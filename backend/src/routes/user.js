@@ -6,7 +6,6 @@ const loginGuard = require("../middlewares/loginGuard")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 
-
 //회원 가입 API v3
 // router.post("", validater("id"),validater("pw"),validater("name"),validater("gender"),validater("birthday"),validater("phone"),validater("email"),validater("address"),wrapper((req,res)=>{
 //     maria.query("INSERT INTO user (id, password, name,  gender, birthday, phone_number, email,address) VALUES(?,?,?,?,?,?,?,?)",
@@ -85,7 +84,7 @@ router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (re
     }
 }))
 
-// //ID 찾기 v2
+// ID 찾기 v2
 router.get("/find-id",validater("name",regx.name),validater("email",regx.email),wrapper(async (req,res)=>{
     const {name, email} = req.body;
     const findIdResult = await psql.query("SELECT id FROM account.list WHERE name = $1 AND email = $2",[name, email])
@@ -100,7 +99,7 @@ router.get("/find-id",validater("name",regx.name),validater("email",regx.email),
     }
 }))
 
-// //PW 찾기 
+// PW 찾기 
 router.get("/find-pw",validater("id",regx.id), validater("name",regx.name),validater("email",regx.email),wrapper(async (req,res)=>{
     const {id, name, email} = req.body;
     const findPwResult = await psql.query("SELECT pw FROM account.list WHERE id = $1 AND name = $2 AND email = $3",[id,name,email])
@@ -115,7 +114,7 @@ router.get("/find-pw",validater("id",regx.id), validater("name",regx.name),valid
     }
 }))
         
-// // 사용자 정보 확인 API 
+// 사용자 정보 확인 API 
 router.get("/my", loginGuard, wrapper(async (req,res)=>{
     const userId = req.session.userid;
     console.log(userId);
@@ -127,7 +126,7 @@ router.get("/my", loginGuard, wrapper(async (req,res)=>{
 }))
 
 
-// //사용자 계정 정보 수정 API
+// 사용자 계정 정보 수정 API
 router.put("/my", loginGuard,validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender)
 ,validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
 ,wrapper(async (req,res)=>{
@@ -142,28 +141,15 @@ router.put("/my", loginGuard,validater("id",regx.id),validater("pw",regx.pw),val
         })
     }
 }))
-                        
-
-
-// router.delete("",loginGuard,wrapper((req,res)=>{
-    //     const userId = req.session.userid;
-    
-    //     maria.query("DELETE FROM user WHERE id = ?",[userId],(error,result)=>{
-        //         if(error){
-            //             return res.status(404).send({
-                //                 "message": error.sqlMessage
-                //             })
-                //         }else{
-//             res.status(200).send({
-//                 "message": "회원탈퇴가 완료되었습니다."
-//             })
-//         } 
-//     })
-// }))
-
+                
+// 사용자 정보 삭제 (회원탈퇴)
 router.delete("/my",loginGuard, wrapper(async (req,res)=>{
-    const userId = req.session.userId;
-    const userDeleteResult = await psql.query("DELETE FROM account.list WHERE id = $1",[userId])
+    const userId = req.session.userid;
+    console.log(userId);
+    const userDeleteResult = await psql.query("DELETE FROM account.list WHERE id = $1",[userId]).catch(err=>{
+        console.error(err.message);
+        throw err;
+    })
     if(userDeleteResult.rowCount > 0){
         res.status(200).send({
             "message": "회원 탈퇴가 완료되었습니다."
