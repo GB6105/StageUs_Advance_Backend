@@ -3,62 +3,33 @@ const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
-
+const authGuard = require("../middlewares/authGuard")
+const adminCheck = require("../middlewares/adminCheck")
+const regx = require('../constants/regx')
+const psql = require("../constants/psql")
 
 // 게시글 목록 불러오기 API
-
-router.get("",loginGuard,wrapper((req,res)=>{
-    //const pageNumber = req.query.page;
-
-    maria.query("SELECT title, user_id FROM post",(error,result)=>{
-        if(error){
-            res.status(404).send({
-                "message": result.sqlMessage
-            })
-        }else{
-            res.status(200).send({
-                "article_list": result
-            })
-        }
-    })
-}))
-
-router.get("", loginGuard, wrapper((req,res)=>{
-
-
+router.get("", loginGuard, wrapper(async (req,res)=>{
+    const articleList = await psql.query("SELECT title, user_id FROM article.list")
+    if(articleList.rows.length>0){
+        res.status(200).send({
+            "article_list": articleList.rows[0]
+        })
+    }
 }))
 
 // 게시글 작성 API
-// router.post("",(req,res) => {
-//     try{
-//         const {title, category_name, content} = req.body 
-//         const writer_id = req.session.userid;//로그인 안하고 api 호출시 에러 메시지 출력 안하는 문제가ㅋ
-//         authCheck(req);
-//         console.log("fien")
-//         //추후 forEach로 수정 해볼듯
-//         checkAndFind("title",title);
-//         checkAndFind("category",category_name);
-//         checkAndFind("content", content);
-        
-//         // 값 승인 되면 데베로 등록
-//         res.status(200).send({
-//             "message": "게시글 작성이 완료되었습니다."
-//         })
-//     }catch(err){
-//         res.status(err.status || 500).send({
-
-//         })
-//     }
-// })
-
-router.post("",loginGuard,validater("title"),validater("category"),validater("content"),wrapper((req,res)=>{
-    
-    //DB처리 파트
-    res.statu(200).send({
-        "message": "게시글 작성이 완료되었습니다."
-    })
-
+router.post("",loginGuard, authGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
+    const {title, category, content} = req.body;
+    const userid = req.session.userid;
+    const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content) VALUES ($1,$2,$3,$4)",[userid,title,category,content])
+    if(writeAritcle.rowCount > 0){
+        res.status(200).send({
+            "message" : "게시글 작성이 완료되었습니다."
+        })
+    }
 }))
+
 
 // 게시글 좋아요 해제
 router.delete("/:idx/like/:likeidx",(req,res) => {
