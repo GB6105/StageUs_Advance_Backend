@@ -3,6 +3,8 @@ const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
+const authGuard = require("../middlewares/authGuard")
+const adminCheck = require("../middlewares/adminCheck")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 
@@ -71,8 +73,10 @@ router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (re
         console.error("query failed");
         throw err;
     })
+    console.log(loginResult.rows[0].role);
     if(loginResult.rows.length > 0){
         req.session.userid = id;
+        req.session.userRole = loginResult.rows[0].role
         res.status(200).send({
             "message": req.session.userid + " 계정으로 로그인에 성공하였습니다."
         })
@@ -157,5 +161,35 @@ router.delete("/my",loginGuard, wrapper(async (req,res)=>{
     }
 }))
 
+// 사용자 권한 변경 (관리자만 가능)
+router.patch("/admin/ban",loginGuard, adminCheck, validater("id",regx.id), wrapper(async (req,res)=>{
+    const {id} = req.body;
+    const userBanResult = await psql.query("UPDATE account.list SET role = 'banned' WHERE id = $1",[id])
+    if(userBanResult.rowCount > 0){
+        res.status(200).send({
+            "message": "해당 사용자 권한을 변경하였습니다."
+        })
+    }
+}))
+
+router.patch("/admin/unban",loginGuard, adminCheck, validater("id",regx.id), wrapper(async (req,res)=>{
+    const {id} = req.body;
+    const userUnBanResult = await psql.query("UPDATE account.list SET role = 'user' WHERE id = $1",[id])
+    if(userUnBanResult.rowCount > 0){
+        res.status(200).send({
+            "message": "해당 사용자 권한을 변경하였습니다."
+        })
+    }
+}))
+
+// 사용자 목록 불러오기 (관리자만 가능)
+router.get("/admin", loginGuard, adminCheck, wrapper(async (req,res)=>{
+    const userList = await psql.query("SELECT * FROM account.list")
+    if(userList.rows.length > 0){
+        res.status(200).send({
+            "userlist": userList.rows[0]
+        })
+    }
+}))
 
 module.exports = router;

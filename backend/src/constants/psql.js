@@ -12,7 +12,8 @@ psql.connect(err =>{
     if(err){
         console.log("faliled to connect db" + drr)
     }else{
-        console.log("connect to db done")
+        console.log("Successfully connected to psql DB")
+        console.log("=========== DB 연결 성공 ==========")
     }
 });
 

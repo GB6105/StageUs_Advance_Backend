@@ -11,18 +11,6 @@ app.use(session({
     maxAge: 24* 60 * 60 // 24시간 
 }))
 
-//
-// app.get("/select", (req,res)=>{
-//     maria.query('SELECT * FROM user',function(err,result,fds){
-//         if(err){
-//             console.log(err)
-//         }
-//         console.log(result);
-//         res.send(result);
-//     })
-// })
-
-
 const userRouter = require("./src/routes/user")
 app.use("/user",userRouter) // 가장 윗 계층
 
