@@ -29,7 +29,7 @@ const psql = require("../constants/psql")
 
 
 //회원 가입 API
-//wrapper 없이 구현현
+//wrapper 없이 구현
 // router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender),validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
 // ,async (req,res)=>{
 //     const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
@@ -63,7 +63,6 @@ router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name"
             "message": "회원가입에 성공하였습니다."
         })
     }
-
 }))
 
 //로그인 API 

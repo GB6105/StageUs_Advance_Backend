@@ -18,7 +18,7 @@ router.get("", loginGuard, wrapper(async (req,res)=>{
     }
 }))
 
-// 게시글 작성 API
+// 게시글 작성 API (벤 유저 금지)
 router.post("",loginGuard, authGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
     const {title, category, content} = req.body;
     const userid = req.session.userid;
@@ -30,130 +30,81 @@ router.post("",loginGuard, authGuard, validater("title",regx.title),validater("c
     }
 }))
 
-
 // 게시글 좋아요 해제
-router.delete("/:idx/like/:likeidx",(req,res) => {
-    //해당 게시글에 좋아요라는 속성을 추가(카테고리 느낌)
-    try{
-        authCheck(req);
-        const like_ = req.body.liked;
-        const recent_article_idx = req.params.idx;
-        const recent_like = req.params.likeidx;
-        console.log(recent_article_idx)
-        console.log(result_like)
-
-        //게시글 존재 여부 확인
-        const result_article = article.filter((article) => article.idx == recent_article_idx)
-        if(!result_article || result_article.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
-
-        //게시글에 좋아요 여부 확인
-        const result_like = user_like_data.filter((data) => data.article_idx == recent_article_idx) //db 조인이면 간편할듯
-        if(result_like[0].liked == 1){
-            res.status(200).send({
-                "message":"게시글에 좋아요를 해제했습니다."
-            })
-        }
-    }catch(err){
-        res.status(err.status||500).send({
-            "message": err.message
+router.delete("/:idx/like",loginGuard, authGuard, wrapper(async (req,res)=>{
+    const articleIdx = req.params.idx;
+    const userid = req.session.userid;
+    const likeDrop = await psql.query("DELETE FROM article.like WHERE article_idx = $1 AND account_id = $2",[articleIdx,userid])
+    if(likeDrop.rowCount > 0){
+        res.status(200).send({
+            "message": "해당 글을 좋아요 해제하였습니다."
+        })
+    }else{
+        res.status(400).send({
+            "message":  "이미 좋아요 해제한 게시글 입니다."
         })
     }
-})
+}))
 
 // 게시글 좋아요 추가
-router.post("/:idx/like",(req,res) => {
-    //해당 게시글에 좋아요라는 속성을 추가(카테고리 느낌)
-    try{
-        authCheck(req);
-        const like = req.body.liked;
-
-        //게시글 존재 여부 확인
-        const recent_article_idx = req.params.idx;
-        const result_article = article.filter((article) => article.idx == recent_article_idx)
-        if(!result_article || result_article.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
-
-        //게시글에 좋아요 여부 확인
-        // const result_like = user_like_data.filter((data) => data[article_idx] == result_article.idx) //db 조인이면 간편할듯
-        const result_like = user_like_data.filter((data) => data.article_idx == recent_article_idx) //db 조인이면 간편할듯
-        if(like ==true && result_like[0].liked == 0){
-            res.status(200).send({
-                "message":"게시글에 좋아요를 남겼습니다."
-            })
-        }else{
-            res.status(409).send({
-                "message" : "이미 좋아요한 게시글 입니다."
-            })
-        }
-    }catch(err){
-        res.status(err.status||500).send({
-            "message": err.message
-        })
-    }
-})
-
-// 게시글 불러오기 API
-router.get("/:idx",(req,res)=>{
-    try{
-        authCheck(req);
-        const articleIdx = req.params.idx;
-        const resultArticle = article.filter((article) => article.idx == articleIdx)
-        if(!resultArticle || resultArticle.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
-        res.status(201).send({
-            "article" : resultArticle[0]
-        })
-
-    }catch(err){
-        res.status(err.status || 500).send({
-            "message" : err.message
-        })
-    }
-})
-
-//게시글 수정하기 API
-router.patch("/:idx",(req,res)=>{
-    try{
-        authCheck(req);
-        // 게시글 확인
-        const articleIdx = req.params.idx;
-        const resultArticle = article.filter((article) => article.idx == articleIdx)
-        if(!resultArticle || resultArticle.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
-        
-        //게시글 수정
-        const {title,category_name, content} = req.body
-        checkAndFind("title", title)
-        checkAndFind("category",category_name)
-        checkAndFind("content",content)
-
-        //DB로 게시글 수정값 올리기
-
+router.post("/:idx/like",loginGuard,authGuard,wrapper(async (req,res)=>{
+    const articleIdx = req.params.idx;
+    const userid = req.session.userid;
+    const likeAdd = await psql.query("INSERT INTO article.like (article_idx,account_id) VALUES ($1, $2) ON CONFLICT (article_idx, account_id) DO NOTHING",[articleIdx,userid])
+    if(likeAdd.rowCount > 0){
         res.status(200).send({
-            "message" : "게시글이 수정되었습니다."
+            "message": "해당 글을 좋아요에 추가하였습니다."
         })
-    }catch(err){
-        res.status(err.status || 500).send({
-            "message" : err.message
+    }else{
+        res.status(400).send({
+            "message":  "이미 좋아요한 게시글 입니다."
         })
     }
-})
 
-//게시글 삭제하기 API
-router.delete("/:idx",(req,res)=>{
-    try{
-        authCheck(req);
-        const articleIdx = req.params.idx;
-        const resultArticle = article.filter((article) => article.idx == articleIdx)
-        if(!resultArticle || resultArticle.length === 0) throw customError("존재하지 않는 게시글 입니다.",404)
-        //DB 통해서 게시글 삭제 처리
+}))
+
+// 게시글 불러오기 API (벤 유저 금지)
+router.get("/:idx", loginGuard, authGuard, wrapper(async (req,res)=>{
+    const articleIdx = req.params.idx;
+    const getArticle = await psql.query("SELECT * FROM article.list WHERE idx = $1",[articleIdx])
+    if(getArticle.rows.length > 0){
         res.status(200).send({
-            "message" : "게시글이 삭제되었습니다."
-        })
-    }catch(err){
-        res.status(err.status || 500).send({
-            "message" : err.message
+            "article" : getArticle.rows[0]
         })
     }
-})
+}))
 
+//게시글 수정하기 API (벤 유저 금지) (본인 확인)
+router.patch("/:idx", loginGuard, authGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
+    const userid = req.session.userid
+    const articleIdx = req.params.idx
+    const {title, category, content} = req.body;
+    const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userid])
+    if(articlePatch.rowCount > 0){
+        res.status(200).send({
+            "message": "게시글이 수정되었습니다."
+        })
+    }else{
+        res.status(401).send({
+            "message": "작성자만 수정할 수 있습니다."
+        })
+    }
+}))
 
+//게시글 삭제하기 API (벤 유저 금지) (본인확인)
+router.delete("/:idx",loginGuard, authGuard, wrapper(async (req,res)=>{
+    const userid = req.session.userid;
+    const articleIdx = req.params.idx;
+    const articleDelete = await psql.query("DELETE FROM article.list WHERE idx = $1 AND writer_id = $2",[articleIdx,userid])
+    if(articleDelete.rowCount>0){
+        res.status(200).send({
+            "message":"게시글이 삭제되었습니다."
+        })
+    }else{
+        res.status(401).send({
+            "message": "작성자만 삭제할 수 있습니다."
+        })
+    }
+}))
 
 module.exports = router;
