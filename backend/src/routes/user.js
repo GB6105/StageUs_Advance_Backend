@@ -52,18 +52,26 @@ const psql = require("../constants/psql")
 // })
 
 //wrapper를 async로 해서 구현
-router.post("", validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender)
-,validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
-,wrapper(async (req,res)=>{
-    const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
+router.post("", 
+    validater("id",regx.id),
+    validater("pw",regx.pw),
+    validater("name",regx.name),
+    validater("gender",regx.gender),
+    validater("birthday",regx.birthday),
+    validater("phone",regx.phone),
+    validater("email",regx.email),
+    validater("nation",regx.nation),
+    wrapper(async (req,res)=>{
+        const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
 
-    const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation])
-    if(signUpResult.rowCount > 0){
-        res.status(200).send({
-            "message": "회원가입에 성공하였습니다."
-        })
+        const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation])
+        if(signUpResult.rowCount > 0){
+            res.status(200).send({
+                "message": "회원가입에 성공하였습니다."
+            })
+        }
     }
-}))
+))
 
 //로그인 API 
 router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (req,res)=>{

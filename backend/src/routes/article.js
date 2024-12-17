@@ -94,7 +94,7 @@ router.patch("/:idx", loginGuard, authGuard, validater("title",regx.title),valid
 //게시글 삭제하기 API (벤 유저 금지) (본인확인)
 router.delete("/:idx",loginGuard, authGuard, wrapper(async (req,res)=>{
     const userid = req.session.userid;
-    const articleIdx = req.params.idx;
+    const articleIdx = req.params.idx; // 404 있어야함 
     const articleDelete = await psql.query("DELETE FROM article.list WHERE idx = $1 AND writer_id = $2",[articleIdx,userid])
     if(articleDelete.rowCount>0){
         res.status(200).send({

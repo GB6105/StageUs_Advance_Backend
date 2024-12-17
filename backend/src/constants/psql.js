@@ -1,5 +1,4 @@
 const pg = require('pg');
-require("dotenv").config();
 
 const psql = new pg.Pool({
     host: process.env.DB_HOST,
@@ -8,6 +7,7 @@ const psql = new pg.Pool({
     password:process.env.DB_PW,
     database: process.env.DB_NAME
 })
+
 psql.connect(err =>{
     if(err){
         console.log("faliled to connect db" + drr)
