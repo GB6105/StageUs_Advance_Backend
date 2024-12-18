@@ -4,7 +4,6 @@ const wrapper = require("../utils/wrapper")
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
 const authGuard = require("../middlewares/authGuard")
-const adminCheck = require("../middlewares/adminCheck")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 

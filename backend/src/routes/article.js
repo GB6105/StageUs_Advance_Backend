@@ -5,7 +5,6 @@ const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
 const authGuard = require("../middlewares/authGuard")
 const banGuard = require("../middlewares/banGuard")
-const adminCheck = require("../middlewares/adminCheck")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 
