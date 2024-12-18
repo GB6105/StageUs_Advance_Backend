@@ -33,7 +33,7 @@ router.get("", loginGuard, authGuard, wrapper(async (req,res)=>{
     const userList = await psql.query("SELECT * FROM account.list")
     if(userList.rows.length > 0){
         res.status(200).send({
-            "userlist": userList.rows[0]
+            "userlist": userList.rows
         })
     }
 }))
