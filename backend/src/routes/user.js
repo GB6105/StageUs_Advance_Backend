@@ -66,6 +66,7 @@ router.post("",
 
         const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation])
         if(signUpResult.rowCount > 0){
+            const banTable = await psql.query('INSERT INTO account.isBanned (account_id, ban) VALUES($1, $2)',[id,"F"])
             res.status(200).send({
                 "message": "회원가입에 성공하였습니다."
             })

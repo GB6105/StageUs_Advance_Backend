@@ -21,6 +21,9 @@ app.use("/article",articleRouters) // 가장 윗 계층
 const commentRouters = require("./src/routes/comment")
 app.use("/comment",commentRouters)
 
+const adminRouters = require("./src/routes/admin")
+app.use("/admin",adminRouters)
+
 app.listen(8000, () => {
     console.log("8000번 포트에서 HTTP 웹 서버 실행")
 })

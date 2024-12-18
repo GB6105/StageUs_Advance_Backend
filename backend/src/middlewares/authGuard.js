@@ -1,7 +1,7 @@
 const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 
-const authenticator = wrapper((req,res,next)=>{
+const authGuard = wrapper((req,res,next)=>{
     // const id = req.session.userid;
     const role = req.session.userRole;
     // 작성자 id 받아오기
@@ -9,4 +9,4 @@ const authenticator = wrapper((req,res,next)=>{
     // if(id != "")
     next()
 })
-module.exports = authenticator
+module.exports = authGuard

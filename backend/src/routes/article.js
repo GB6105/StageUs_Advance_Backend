@@ -4,6 +4,7 @@ const wrapper = require("../utils/wrapper")
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
 const authGuard = require("../middlewares/authGuard")
+const banGuard = require("../middlewares/banGuard")
 const adminCheck = require("../middlewares/adminCheck")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
@@ -19,7 +20,7 @@ router.get("", loginGuard, wrapper(async (req,res)=>{
 }))
 
 // 게시글 작성 API (벤 유저 금지)
-router.post("",loginGuard, authGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
+router.post("",loginGuard, banGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
     const {title, category, content} = req.body;
     const userid = req.session.userid;
     const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content) VALUES ($1,$2,$3,$4)",[userid,title,category,content])
@@ -31,7 +32,7 @@ router.post("",loginGuard, authGuard, validater("title",regx.title),validater("c
 }))
 
 // 게시글 좋아요 해제
-router.delete("/:idx/like",loginGuard, authGuard, wrapper(async (req,res)=>{
+router.delete("/:idx/like",loginGuard, banGuard, wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
     const userid = req.session.userid;
     const likeDrop = await psql.query("DELETE FROM article.like WHERE article_idx = $1 AND account_id = $2",[articleIdx,userid])
@@ -47,7 +48,7 @@ router.delete("/:idx/like",loginGuard, authGuard, wrapper(async (req,res)=>{
 }))
 
 // 게시글 좋아요 추가
-router.post("/:idx/like",loginGuard,authGuard,wrapper(async (req,res)=>{
+router.post("/:idx/like",loginGuard,banGuard,wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
     const userid = req.session.userid;
     const likeAdd = await psql.query("INSERT INTO article.like (article_idx,account_id) VALUES ($1, $2) ON CONFLICT (article_idx, account_id) DO NOTHING",[articleIdx,userid])
@@ -64,7 +65,7 @@ router.post("/:idx/like",loginGuard,authGuard,wrapper(async (req,res)=>{
 }))
 
 // 게시글 불러오기 API (벤 유저 금지)
-router.get("/:idx", loginGuard, authGuard, wrapper(async (req,res)=>{
+router.get("/:idx", loginGuard, banGuard, wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
     const getArticle = await psql.query("SELECT * FROM article.list WHERE idx = $1",[articleIdx])
     if(getArticle.rows.length > 0){
@@ -75,7 +76,7 @@ router.get("/:idx", loginGuard, authGuard, wrapper(async (req,res)=>{
 }))
 
 //게시글 수정하기 API (벤 유저 금지) (본인 확인)
-router.patch("/:idx", loginGuard, authGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
+router.patch("/:idx", loginGuard, banGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
     const userid = req.session.userid
     const articleIdx = req.params.idx
     const {title, category, content} = req.body;
@@ -92,7 +93,7 @@ router.patch("/:idx", loginGuard, authGuard, validater("title",regx.title),valid
 }))
 
 //게시글 삭제하기 API (벤 유저 금지) (본인확인)
-router.delete("/:idx",loginGuard, authGuard, wrapper(async (req,res)=>{
+router.delete("/:idx",loginGuard, banGuard, wrapper(async (req,res)=>{
     const userid = req.session.userid;
     const articleIdx = req.params.idx; // 404 있어야함 
     const articleDelete = await psql.query("DELETE FROM article.list WHERE idx = $1 AND writer_id = $2",[articleIdx,userid])
