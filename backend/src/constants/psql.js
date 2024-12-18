@@ -1,4 +1,5 @@
 const pg = require('pg');
+const wrapper = require("../utils/wrapper")
 
 const psql = new pg.Pool({
     host: process.env.DB_HOST,
@@ -17,5 +18,11 @@ psql.connect(err =>{
     }
 });
 
+// const getConnection = wrapper(async () =>{
+//     const client = await psql.connect();
+//     console.log("=========== DB 연결 성공 ==========")
+//     return client;
+// })
 
+// module.exports = getConnection;
 module.exports = psql;
