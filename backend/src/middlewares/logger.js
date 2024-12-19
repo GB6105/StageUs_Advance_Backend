@@ -51,13 +51,25 @@
 
 // module.exports = { requestLoggerMiddleware };
 
+const mongodb = require("../constants/mongodb")
+
 const resDotSendInterceptor = (res, originalSend) => (content) => {
     res.contentBody = content; // 응답 내용을 저장
     originalSend.call(res, content); // 기존 res.send 호출
 };
 
-const requestLoggerMiddleware = ({ logger }) => (req, res, next) => {
+const requestLoggerMiddleware = ({ logger }) => async (req, res, next) => {
+    const client = await mongodb();
+    const db = client.db("board_log");
     logger("RECV <<<", req.method, req.url, req.hostname, res.statusCode);
+    await db.collection("log").insertOne({
+        "method" : req.method,
+        "entryPoin" : req.url,
+        "hostname" : req.hostname,
+        "statusCode" : res.statusCode,
+        "timestamp" : new Date()
+    })
+
     const originalSend = res.send; // 기존 res.send 저장
     res.send = resDotSendInterceptor(res, originalSend); // res.send 재정의
     res.on("finish", () => {
