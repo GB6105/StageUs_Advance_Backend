@@ -1,7 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const app = express();
-const mgdb = require("./src/constants/mongodb")
+const mongodb = require("./src/constants/mongodb")
 
 require("dotenv").config();
 
@@ -26,18 +26,6 @@ app.use("/comment",commentRouters)
 const adminRouters = require("./src/routes/admin")
 app.use("/admin",adminRouters)
 
-app.get("/", async (req, res) => {
-    try {
-        const dbStatus = await mgdb; // MongoDB 연결 상태 확인
-        if (dbStatus.readyState === 1) {
-            res.send("MongoDB is connected!");
-        } else {
-            res.status(500).send("MongoDB is not connected!");
-        }
-    } catch (err) {
-        res.status(500).send("Error checking MongoDB connection");
-    }
-});
 
 app.listen(8000, () => {
     console.log("8000번 포트에서 HTTP 웹 서버 실행")
