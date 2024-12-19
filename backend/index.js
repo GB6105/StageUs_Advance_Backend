@@ -28,6 +28,9 @@ app.use("/comment",commentRouters)
 const adminRouters = require("./src/routes/admin")
 app.use("/admin",adminRouters)
 
+const logRouters = require("./src/routes/log")
+app.use("/log",logRouters)
+
 
 app.listen(8000, () => {
     console.log("______________________________________________")
