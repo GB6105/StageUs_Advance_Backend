@@ -75,12 +75,15 @@ router.post("",
 
 //로그인 API 
 router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (req,res)=>{
+    // console.log(req)
+    // console.log(req.method)
+    // console.log(req.url)
     const {id, pw} = req.body;
     const loginResult = await psql.query('SELECT * FROM account.list WHERE id = $1 AND pw = $2',[id,pw]).catch(err =>{
         console.error("query failed");
         throw err;
     })
-    console.log(loginResult.rows[0].role);
+    console.log("로그인 계정 권한:",loginResult.rows[0].role);
     if(loginResult.rows.length > 0){
         req.session.userid = id;
         req.session.userRole = loginResult.rows[0].role

@@ -11,7 +11,7 @@ const psql = new pg.Pool({
 
 const connectToDB = wrapper(async () => {
     const client = await psql.connect(); // Await the connection
-    console.log("=========== PostgreSQL DB 연결 성공 ==========");
+    console.log("|========== PostgreSQL DB 연결 성공 =========|");
     client.release(); // Release the client after successful connection
 });
 
