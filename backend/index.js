@@ -1,7 +1,7 @@
 const express = require("express");
 const session = require("express-session");
 const app = express();
-const errorhandler = require("./src/middlewares/errorhandler");
+const {errorhandler,notfoundhandler} = require("./src/middlewares/errorhandler");
 const loggingMiddleware = require("./src/middlewares/logger");
 
 
@@ -33,7 +33,9 @@ app.use("/admin",adminRouters)
 const logRouters = require("./src/routes/log")
 app.use("/log",logRouters)
 
-app.use("/error",errorhandler)
+app.use(notfoundhandler)
+
+app.use(errorhandler)
 
 app.listen(8000, () => {
     console.log("______________________________________________")
