@@ -1,7 +1,9 @@
 const express = require("express");
 const session = require("express-session");
 const app = express();
-const { requestLoggerMiddleware } = require("./src/middlewares/logger");
+const errorhandler = require("./src/middlewares/errorhandler");
+const loggingMiddleware = require("./src/middlewares/logger");
+
 
 require("dotenv").config();
 
@@ -14,7 +16,7 @@ app.use(session({
     maxAge: 24* 60 * 60 // 24시간 
 }))
 
-app.use(requestLoggerMiddleware({ logger: console.log }));
+app.use("/", loggingMiddleware);
 
 const userRouter = require("./src/routes/user")
 app.use("/user",userRouter) // 가장 윗 계층
@@ -31,6 +33,7 @@ app.use("/admin",adminRouters)
 const logRouters = require("./src/routes/log")
 app.use("/log",logRouters)
 
+app.use("/error",errorhandler)
 
 app.listen(8000, () => {
     console.log("______________________________________________")

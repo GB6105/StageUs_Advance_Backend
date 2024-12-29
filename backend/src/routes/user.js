@@ -1,6 +1,6 @@
 const router = require("express").Router()
 const customError = require("../utils/customError")
-const wrapper = require("../utils/wrapper")
+const wrapper = require("../utils/wrapper")                          
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
 const authGuard = require("../middlewares/authGuard")
@@ -8,25 +8,6 @@ const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 
 //회원 가입 API v3
-// router.post("", validater("id"),validater("pw"),validater("name"),validater("gender"),validater("birthday"),validater("phone"),validater("email"),validater("address"),wrapper((req,res)=>{
-//     maria.query("INSERT INTO user (id, password, name,  gender, birthday, phone_number, email,address) VALUES(?,?,?,?,?,?,?,?)",
-//         [req.body.id, req.body.pw, req.body.name, req.body.gender, req.body.birthday, req.body.phone, req.body.email, req.body.address],(error, result) =>{
-//         if(error){
-//             console.log(error.stack);
-//             return res.status(404).send({
-//                 "message": error.sqlMessage
-//             })
-//         }else{
-//             res.status(200).send({
-//                 "user_info":result[0],
-//                 "message" : "회원가입에 성공하였습니다."
-//             })
-//         }    
-//     })
-//     //res.
-// }))
-
-//wrapper를 async로 해서 구현
 router.post("", 
     validater("id",regx.id),
     validater("pw",regx.pw),
@@ -50,7 +31,10 @@ router.post("",
 ))
 
 //로그인 API 
-router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (req,res)=>{
+router.get("",
+    validater("id",regx.id),
+    validater("pw",regx.pw),
+    wrapper(async (req,res)=>{
     // console.log(req)
     // console.log(req.method)
     // console.log(req.url)
@@ -75,7 +59,10 @@ router.get("",validater("id",regx.id),validater("pw",regx.pw), wrapper(async (re
 }))
 
 // ID 찾기 v2
-router.get("/find-id",validater("name",regx.name),validater("email",regx.email),wrapper(async (req,res)=>{
+router.get("/find-id",
+    validater("name",regx.name),
+    validater("email",regx.email),
+    wrapper(async (req,res)=>{
     const {name, email} = req.body;
     const findIdResult = await psql.query("SELECT id FROM account.list WHERE name = $1 AND email = $2",[name, email])
     if(findIdResult.rows[0]){
@@ -90,7 +77,11 @@ router.get("/find-id",validater("name",regx.name),validater("email",regx.email),
 }))
 
 // PW 찾기 
-router.get("/find-pw",validater("id",regx.id), validater("name",regx.name),validater("email",regx.email),wrapper(async (req,res)=>{
+router.get("/find-pw",
+    validater("id",regx.id),
+    validater("name",regx.name),
+    validater("email",regx.email),
+    wrapper(async (req,res)=>{
     const {id, name, email} = req.body;
     const findPwResult = await psql.query("SELECT pw FROM account.list WHERE id = $1 AND name = $2 AND email = $3",[id,name,email])
     if(findPwResult.rows[0]){
@@ -105,7 +96,9 @@ router.get("/find-pw",validater("id",regx.id), validater("name",regx.name),valid
 }))
         
 // 사용자 정보 확인 API 
-router.get("/my", loginGuard, wrapper(async (req,res)=>{
+router.get("/my",
+    loginGuard,
+    wrapper(async (req,res)=>{
     const userId = req.session.userid;
     console.log(userId);
     const userInfo = await psql.query("SELECT * FROM account.list WHERE id = $1",[userId])
@@ -117,9 +110,17 @@ router.get("/my", loginGuard, wrapper(async (req,res)=>{
 
 
 // 사용자 계정 정보 수정 API
-router.put("/my", loginGuard,validater("id",regx.id),validater("pw",regx.pw),validater("name",regx.name),validater("gender",regx.gender)
-,validater("birthday",regx.birthday),validater("phone",regx.phone),validater("email",regx.email),validater("nation",regx.nation)
-,wrapper(async (req,res)=>{
+router.put("/my",
+    loginGuard,
+    validater("id",regx.id),
+    validater("pw",regx.pw),
+    validater("name",regx.name),
+    validater("gender",regx.gender),
+    validater("birthday",regx.birthday),
+    validater("phone",regx.phone),
+    validater("email",regx.email),
+    validater("nation",regx.nation),
+    wrapper(async (req,res)=>{
     const userId = req.session.userid;
     const {id,pw,name,gender,birthday,phone,email,nation} = req.body;
 

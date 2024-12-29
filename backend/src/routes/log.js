@@ -8,14 +8,6 @@ const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 const { connectToDatabase } = require("../constants/mongodb");
 
-// router.get("",wrapper(async (req,res)=>{
-//     const db = await connectToDatabase();
-    
-//     const logList = await db.collection("log").find().toArray()
-//     res.status(200).send({
-//         "data":logList
-//     })
-// }))
 
 router.get("", wrapper(async (req, res) => {
     const db = await connectToDatabase();
