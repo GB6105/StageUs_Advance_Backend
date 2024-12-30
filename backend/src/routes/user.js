@@ -6,6 +6,7 @@ const loginGuard = require("../middlewares/loginGuard")
 const authGuard = require("../middlewares/authGuard")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
+const jwt = require("jsonwebtoken")
 
 //회원 가입 API v3
 router.post("", 
@@ -45,10 +46,24 @@ router.get("",
     })
     console.log("로그인 계정 권한:",loginResult.rows[0].role);
     if(loginResult.rows.length > 0){
-        req.session.userid = id;
-        req.session.userRole = loginResult.rows[0].role
+        //
+        //req.session.userid = id;
+        //req.session.userRole = loginResult.rows[0].role
+        
+        //
+        const token = jwt.sign({
+            "id" : id,
+            "password" : pw,
+            "role" : loginResult.rows[0].role
+        },process.env.JWT_SIGNATURE_KEY,{
+            "issuer": "gb6105",
+            "expiresIn" : "2m"
+        })
+
+
         res.status(200).send({
-            "message": req.session.userid + " 계정으로 로그인에 성공하였습니다."
+            "message": id + " 계정으로 로그인에 성공하였습니다.",
+            "token" : token
         })
     }
     else{
