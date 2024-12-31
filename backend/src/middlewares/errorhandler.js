@@ -16,7 +16,7 @@ const errorhandler = (err,req,res,next)=>{
     })
 }
 
-const notfoundMiddleware = wrapper(async (req,res,next)=>{
+const articleNotfoundMiddleware = wrapper(async (req,res,next)=>{
     const targetPage = req.params.idx;
     
     const findPage = await psql.query("SELECT 1 FROM article.list WHERE idx = $1",[targetPage])
@@ -27,5 +27,16 @@ const notfoundMiddleware = wrapper(async (req,res,next)=>{
     next()
 })
 
-module.exports = {errorhandler, notfoundhandler, notfoundMiddleware};
+const commentNotfoundMiddleware = wrapper(async (req,res,next)=>{
+    const targetPage = req.params.idx;
+    
+    const findPage = await psql.query("SELECT 1 FROM comment.list WHERE idx = $1",[targetPage])
+    console.log(findPage);
+    if(findPage.rows.length === 0){
+        throw customError("해당 컨텐츠를 찾을 수 없습니다.",404);
+    } 
+    next()
+})
+
+module.exports = {errorhandler, notfoundhandler, articleNotfoundMiddleware, commentNotfoundMiddleware};
 
