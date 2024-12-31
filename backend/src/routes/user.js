@@ -52,12 +52,12 @@ router.get("",
         
         //
         const token = jwt.sign({
-            "id" : id,
+            "userId" : id,
             "password" : pw,
-            "role" : loginResult.rows[0].role
+            "userRole" : loginResult.rows[0].role
         },process.env.JWT_SIGNATURE_KEY,{
             "issuer": "gb6105",
-            "expiresIn" : "2m"
+            "expiresIn" : "1m"
         })
 
 
@@ -114,12 +114,18 @@ router.get("/find-pw",
 router.get("/my",
     loginGuard,
     wrapper(async (req,res)=>{
-    const userId = req.session.userid;
-    console.log(userId);
+    // const userId = req.session.userid;
+    // const userInfo = await psql.query("SELECT * FROM account.list WHERE id = $1",[userId])
+    // console.log(userId);
+    // console.log(userInfo)
+    
+    //token을 통한 인증으로 교체
+    const {userId} = req.decoded;
+    console.log(userId)
     const userInfo = await psql.query("SELECT * FROM account.list WHERE id = $1",[userId])
-    console.log(userInfo)
+    
     res.status(200).send({
-        "userInfo":userInfo.rows[0]
+        "userInfo":userInfo.rows[0] 
     })
 }))
 
@@ -136,9 +142,11 @@ router.put("/my",
     validater("email",regx.email),
     validater("nation",regx.nation),
     wrapper(async (req,res)=>{
-    const userId = req.session.userid;
-    const {id,pw,name,gender,birthday,phone,email,nation} = req.body;
 
+    //const userId = req.session.userid;
+    const {id,pw,name,gender,birthday,phone,email,nation} = req.body;
+    
+    const {userId} = req.decoded;
     const userInfoEdit = await psql.query("UPDATE account.list SET id = $1 , pw = $2, name = $3, gender = $4, birthday = $5, phone = $6, email = $7, nation = $8 WHERE id = $9",[id, pw, name, gender, birthday, phone, email, nation, userId])
 
     if(userInfoEdit.rowCount > 0){
@@ -150,7 +158,8 @@ router.put("/my",
                 
 // 사용자 정보 삭제 (회원탈퇴)
 router.delete("/my",loginGuard, wrapper(async (req,res)=>{
-    const userId = req.session.userid;
+    //const userId = req.session.userid;
+    const {userId} = req.decoded;
     console.log(userId);
     const userDeleteResult = await psql.query("DELETE FROM account.list WHERE id = $1",[userId]).catch(err=>{
         console.error(err.message);

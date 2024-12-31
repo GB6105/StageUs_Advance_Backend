@@ -21,8 +21,10 @@ router.get("", loginGuard, wrapper(async (req,res)=>{
 // 게시글 작성 API (벤 유저 금지)
 router.post("",loginGuard, banGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
     const {title, category, content} = req.body;
-    const userid = req.session.userid;
-    const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content) VALUES ($1,$2,$3,$4)",[userid,title,category,content])
+    // const userid = req.session.userid;
+    const {userId} = req.decoded;
+
+    const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content) VALUES ($1,$2,$3,$4)",[userId,title,category,content])
     if(writeAritcle.rowCount > 0){
         res.status(200).send({
             "message" : "게시글 작성이 완료되었습니다."
@@ -33,8 +35,10 @@ router.post("",loginGuard, banGuard, validater("title",regx.title),validater("ca
 // 게시글 좋아요 해제
 router.delete("/:idx/like",loginGuard, banGuard, wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
-    const userid = req.session.userid;
-    const likeDrop = await psql.query("DELETE FROM article.like WHERE article_idx = $1 AND account_id = $2",[articleIdx,userid])
+    // const userid = req.session.userid;
+    const {userId} = req.decoded;
+
+    const likeDrop = await psql.query("DELETE FROM article.like WHERE article_idx = $1 AND account_id = $2",[articleIdx,userId])
     if(likeDrop.rowCount > 0){
         res.status(200).send({
             "message": "해당 글을 좋아요 해제하였습니다."
@@ -76,10 +80,12 @@ router.get("/:idx", loginGuard, banGuard, wrapper(async (req,res)=>{
 
 //게시글 수정하기 API (벤 유저 금지) (본인 확인)
 router.patch("/:idx", loginGuard, banGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
-    const userid = req.session.userid
+    // const userid = req.session.userid
+    const {userId} = req.decoded;
+
     const articleIdx = req.params.idx
     const {title, category, content} = req.body;
-    const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userid])
+    const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userId])
     if(articlePatch.rowCount > 0){
         res.status(200).send({
             "message": "게시글이 수정되었습니다."
@@ -93,9 +99,11 @@ router.patch("/:idx", loginGuard, banGuard, validater("title",regx.title),valida
 
 //게시글 삭제하기 API (벤 유저 금지) (본인확인)
 router.delete("/:idx",loginGuard, banGuard, wrapper(async (req,res)=>{
-    const userid = req.session.userid;
+    // const userid = req.session.userid;
+    const {userId} = req.decoded;
+
     const articleIdx = req.params.idx; // 404 있어야함 
-    const articleDelete = await psql.query("DELETE FROM article.list WHERE idx = $1 AND writer_id = $2",[articleIdx,userid])
+    const articleDelete = await psql.query("DELETE FROM article.list WHERE idx = $1 AND writer_id = $2",[articleIdx,userId])
     if(articleDelete.rowCount>0){
         res.status(200).send({
             "message":"게시글이 삭제되었습니다."
