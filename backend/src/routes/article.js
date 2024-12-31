@@ -7,6 +7,7 @@ const authGuard = require("../middlewares/authGuard")
 const banGuard = require("../middlewares/banGuard")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
+const {notfoundMiddleware} = require("../middlewares/errorhandler")
 
 // 게시글 목록 불러오기 API
 router.get("", loginGuard, wrapper(async (req,res)=>{
@@ -33,7 +34,7 @@ router.post("",loginGuard, banGuard, validater("title",regx.title),validater("ca
 }))
 
 // 게시글 좋아요 해제
-router.delete("/:idx/like",loginGuard, banGuard, wrapper(async (req,res)=>{
+router.delete("/:idx/like",loginGuard, banGuard, notfoundMiddleware, wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
     // const userid = req.session.userid;
     const {userId} = req.decoded;
@@ -51,7 +52,7 @@ router.delete("/:idx/like",loginGuard, banGuard, wrapper(async (req,res)=>{
 }))
 
 // 게시글 좋아요 추가
-router.post("/:idx/like",loginGuard,banGuard,wrapper(async (req,res)=>{
+router.post("/:idx/like",loginGuard,banGuard, notfoundMiddleware, wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
     const userid = req.session.userid;
     const likeAdd = await psql.query("INSERT INTO article.like (article_idx,account_id) VALUES ($1, $2) ON CONFLICT (article_idx, account_id) DO NOTHING",[articleIdx,userid])
@@ -68,7 +69,7 @@ router.post("/:idx/like",loginGuard,banGuard,wrapper(async (req,res)=>{
 }))
 
 // 게시글 불러오기 API (벤 유저 금지)
-router.get("/:idx", loginGuard, banGuard, wrapper(async (req,res)=>{
+router.get("/:idx", loginGuard, banGuard, notfoundMiddleware, wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
     const getArticle = await psql.query("SELECT * FROM article.list WHERE idx = $1",[articleIdx])
     if(getArticle.rows.length > 0){
@@ -79,7 +80,14 @@ router.get("/:idx", loginGuard, banGuard, wrapper(async (req,res)=>{
 }))
 
 //게시글 수정하기 API (벤 유저 금지) (본인 확인)
-router.patch("/:idx", loginGuard, banGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
+router.patch("/:idx",
+    loginGuard,
+    banGuard,
+    validater("title",regx.title),
+    validater("category",regx.category),
+    validater("content",regx.content),
+    notfoundMiddleware,
+    wrapper(async (req,res)=>{
     // const userid = req.session.userid
     const {userId} = req.decoded;
 
@@ -98,7 +106,7 @@ router.patch("/:idx", loginGuard, banGuard, validater("title",regx.title),valida
 }))
 
 //게시글 삭제하기 API (벤 유저 금지) (본인확인)
-router.delete("/:idx",loginGuard, banGuard, wrapper(async (req,res)=>{
+router.delete("/:idx",loginGuard, banGuard, notfoundMiddleware, wrapper(async (req,res)=>{
     // const userid = req.session.userid;
     const {userId} = req.decoded;
 
