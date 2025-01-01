@@ -1,5 +1,3 @@
-// const eventEmitter = require("../middlewares/logger")
-
 const wrapper = (func) => {
     return async (req,res,next,...elem)=>{
         try{

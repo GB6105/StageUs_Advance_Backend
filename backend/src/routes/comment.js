@@ -4,13 +4,19 @@ const wrapper = require("../utils/wrapper")
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
 const authGuard = require("../middlewares/authGuard")
+const banGuard = require("../middlewares/banGuard")
+
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 const {commentNotfoundMiddleware} = require("../middlewares/errorhandler")
 
 
 //댓글 좋아요 해제하기
-router.delete("/:idx/like", loginGuard, authGuard, commentNotfoundMiddleware, wrapper(async (req,res)=>{
+router.delete("/:idx/like",
+    loginGuard,
+    authGuard,
+    commentNotfoundMiddleware,
+    wrapper(async (req,res)=>{
     const commentIdx = req.params.idx;
     // const userid = req.session.userid;
     const {userId} = req.decoded;
@@ -28,7 +34,11 @@ router.delete("/:idx/like", loginGuard, authGuard, commentNotfoundMiddleware, wr
 }) )
 
 //댓글 좋아요 추가하기
-router.post("/:idx/like",loginGuard,authGuard, commentNotfoundMiddleware, wrapper(async (req,res)=>{
+router.post("/:idx/like",
+    loginGuard,
+    authGuard,
+    commentNotfoundMiddleware,
+    wrapper(async (req,res)=>{
     const commentIdx = req.params.idx;
     // const userid = req.session.userid;
     const {userId} = req.decoded;
@@ -46,7 +56,10 @@ router.post("/:idx/like",loginGuard,authGuard, commentNotfoundMiddleware, wrappe
 }))
 
 //댓글 수정하기
-router.patch("/:idx", loginGuard, authGuard, commentNotfoundMiddleware, wrapper(async (req,res)=>{
+router.patch("/:idx",
+    loginGuard,
+    authGuard,
+    wrapper(async (req,res)=>{
     //const userid = req.session.userid;
     const {userId} = req.decoded;
 
@@ -66,7 +79,10 @@ router.patch("/:idx", loginGuard, authGuard, commentNotfoundMiddleware, wrapper(
 
 
 //댓글 삭제하기
-router.delete("/:idx",loginGuard, authGuard, commentNotfoundMiddleware, wrapper(async (req,res)=>{
+router.delete("/:idx",
+    loginGuard,
+    authGuard,
+    wrapper(async (req,res)=>{
     //const userid = req.session.userid;
     const {userId} = req.decoded;
 
@@ -86,8 +102,16 @@ router.delete("/:idx",loginGuard, authGuard, commentNotfoundMiddleware, wrapper(
 }))
 
 //게시글에 해당하는 댓글 불러오기
-router.get("", loginGuard, authGuard, wrapper(async (req,res)=>{
+router.get("", 
+    loginGuard,
+    banGuard,
+    wrapper(async (req,res)=>{
     const {articleIdx} = req.body;
+
+    //find article 404
+    const findPage = await psql.query("SELECT * FROM article.list WHERE idx = $1",[articleIdx])
+    if(findPage.rows.length === 0)throw customError("해당 게시물이 존재하지 않습니다.")
+
     const commentList = await psql.query("SELECT * FROM comment.list WHERE article_idx = $1",[articleIdx])
     if(commentList.rows.length >0){
         res.status(200).send({
@@ -101,13 +125,19 @@ router.get("", loginGuard, authGuard, wrapper(async (req,res)=>{
 }))
 
 //댓글 작성하기
-router.post("",loginGuard, authGuard, validater("content",regx.content), wrapper(async (req,res)=>{
+router.post("",
+    loginGuard,
+    banGuard, 
+    validater("content",regx.content),
+    wrapper(async (req,res)=>{
     const {articleIdx,content} = req.body;
+    const findPage = await psql.query("SELECT * FROM article.list WHERE idx = $1",[articleIdx])
+    if(findPage.rows.length === 0)throw customError("해당 게시물이 존재하지 않습니다.")
     //const userid = req.session.userid;
     const {userId} = req.decoded;
 
     const commentWrite = await psql.query("INSERT INTO comment.list (writer_id, content, article_idx) VALUES ($1, $2, $3)",[userId, content, articleIdx]).catch(err=>{
-        res.status(400).send({
+        res.status(404).send({
             "message": "존재하지 않는 게시글입니다."
         })
         throw err;

@@ -20,14 +20,9 @@ const jwt = require("jsonwebtoken");
 //             "message":err.message
 //         })
 //     }
-    
-
 // })
 
 const loginGuard = (req,res,next)=>{
-    // const id = req.session.userid
-    // if(!id) throw customError("잘못된 접근입니다. 로그인해주세요",401)
-    // next()
     const {token} = req.headers
     try{
         req.decoded = jwt.verify(token,process.env.JWT_SIGNATURE_KEY)

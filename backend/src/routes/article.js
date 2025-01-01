@@ -10,7 +10,9 @@ const psql = require("../constants/psql")
 const {articleNotfoundMiddleware} = require("../middlewares/errorhandler")
 
 // 게시글 목록 불러오기 API
-router.get("", loginGuard, wrapper(async (req,res)=>{
+router.get("",
+    loginGuard,
+    wrapper(async (req,res)=>{
     const articleList = await psql.query("SELECT title, user_id FROM article.list")
     if(articleList.rows.length>0){
         res.status(200).send({
@@ -20,7 +22,13 @@ router.get("", loginGuard, wrapper(async (req,res)=>{
 }))
 
 // 게시글 작성 API (벤 유저 금지)
-router.post("",loginGuard, banGuard, validater("title",regx.title),validater("category",regx.category),validater("content",regx.content),wrapper(async (req,res)=>{
+router.post("",
+    loginGuard,
+    banGuard,
+    validater("title",regx.title),
+    validater("category",regx.category),
+    validater("content",regx.content),
+    wrapper(async (req,res)=>{
     const {title, category, content} = req.body;
     // const userid = req.session.userid;
     const {userId} = req.decoded;
@@ -34,7 +42,11 @@ router.post("",loginGuard, banGuard, validater("title",regx.title),validater("ca
 }))
 
 // 게시글 좋아요 해제
-router.delete("/:idx/like",loginGuard, banGuard, articleNotfoundMiddleware, wrapper(async (req,res)=>{
+router.delete("/:idx/like",
+    loginGuard,
+    banGuard,
+    articleNotfoundMiddleware,
+    wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
     // const userid = req.session.userid;
     const {userId} = req.decoded;
@@ -52,16 +64,21 @@ router.delete("/:idx/like",loginGuard, banGuard, articleNotfoundMiddleware, wrap
 }))
 
 // 게시글 좋아요 추가
-router.post("/:idx/like",loginGuard,banGuard, articleNotfoundMiddleware, wrapper(async (req,res)=>{
+router.post("/:idx/like",
+    loginGuard,
+    banGuard, //403
+    articleNotfoundMiddleware, //404
+    wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
-    const userid = req.session.userid;
-    const likeAdd = await psql.query("INSERT INTO article.like (article_idx,account_id) VALUES ($1, $2) ON CONFLICT (article_idx, account_id) DO NOTHING",[articleIdx,userid])
+    // const userid = req.session.userid;
+    const {userId} = req.decoded;
+    const likeAdd = await psql.query("INSERT INTO article.like (article_idx,account_id) VALUES ($1, $2) ON CONFLICT (article_idx, account_id) DO NOTHING",[articleIdx,userId])
     if(likeAdd.rowCount > 0){
         res.status(200).send({
             "message": "해당 글을 좋아요에 추가하였습니다."
         })
     }else{
-        res.status(400).send({
+        res.status(409).send({
             "message":  "이미 좋아요한 게시글 입니다."
         })
     }
@@ -69,7 +86,11 @@ router.post("/:idx/like",loginGuard,banGuard, articleNotfoundMiddleware, wrapper
 }))
 
 // 게시글 불러오기 API (벤 유저 금지)
-router.get("/:idx", loginGuard, banGuard, articleNotfoundMiddleware, wrapper(async (req,res)=>{
+router.get("/:idx",
+    loginGuard,
+    banGuard,
+    articleNotfoundMiddleware,
+    wrapper(async (req,res)=>{
     const articleIdx = req.params.idx;
     const getArticle = await psql.query("SELECT * FROM article.list WHERE idx = $1",[articleIdx])
     if(getArticle.rows.length > 0){
@@ -106,7 +127,11 @@ router.patch("/:idx",
 }))
 
 //게시글 삭제하기 API (벤 유저 금지) (본인확인)
-router.delete("/:idx",loginGuard, banGuard, articleNotfoundMiddleware, wrapper(async (req,res)=>{
+router.delete("/:idx",
+    loginGuard,
+    banGuard,
+    articleNotfoundMiddleware, 
+    wrapper(async (req,res)=>{
     // const userid = req.session.userid;
     const {userId} = req.decoded;
 
