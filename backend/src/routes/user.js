@@ -10,14 +10,16 @@ const jwt = require("jsonwebtoken")
 
 //회원 가입 API v3
 router.post("", 
-    validater("id",regx.id),
-    validater("pw",regx.pw),
-    validater("name",regx.name),
-    validater("gender",regx.gender),
-    validater("birthday",regx.birthday),
-    validater("phone",regx.phone),
-    validater("email",regx.email),
-    validater("nation",regx.nation),
+    validater([
+        {field: "id", regx: regx.id},
+        {field: "pw", regx: regx.pw},
+        {field: "name", regx: regx.name},
+        {field: "gender", regx: regx.gender},
+        {field: "birthday", regx: regx.birthday},
+        {field: "phone", regx: regx.phone},
+        {field: "email", regx: regx.email},
+        {field: "nation", regx: regx.nation},
+    ]),
     wrapper(async (req,res)=>{
         const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
 
@@ -33,8 +35,10 @@ router.post("",
 
 //로그인 API 
 router.get("",
-    validater("id",regx.id),
-    validater("pw",regx.pw),
+    validater([
+        {field: "id", regx: regx.id},
+        {field: "pw", regx: regx.pw}
+    ]),
     wrapper(async (req,res)=>{
     // console.log(req)
     // console.log(req.method)
@@ -75,8 +79,10 @@ router.get("",
 
 // ID 찾기 v2
 router.get("/find-id",
-    validater("name",regx.name),
-    validater("email",regx.email),
+    validater([
+        {field: "name", regx: regx.name},
+        {field: "email", regx: regx.email},
+    ]),
     wrapper(async (req,res)=>{
     const {name, email} = req.body;
     const findIdResult = await psql.query("SELECT id FROM account.list WHERE name = $1 AND email = $2",[name, email])
@@ -93,9 +99,11 @@ router.get("/find-id",
 
 // PW 찾기 
 router.get("/find-pw",
-    validater("id",regx.id),
-    validater("name",regx.name),
-    validater("email",regx.email),
+    validater([
+        {field: "id", regx: regx.id},
+        {field: "name", regx: regx.name},
+        {field: "email", regx: regx.email},
+    ]),
     wrapper(async (req,res)=>{
     const {id, name, email} = req.body;
     const findPwResult = await psql.query("SELECT pw FROM account.list WHERE id = $1 AND name = $2 AND email = $3",[id,name,email])
@@ -133,14 +141,16 @@ router.get("/my",
 // 사용자 계정 정보 수정 API
 router.put("/my",
     loginGuard,
-    validater("id",regx.id),
-    validater("pw",regx.pw),
-    validater("name",regx.name),
-    validater("gender",regx.gender),
-    validater("birthday",regx.birthday),
-    validater("phone",regx.phone),
-    validater("email",regx.email),
-    validater("nation",regx.nation),
+    validater([
+        {field: "id", regx: regx.id},
+        {field: "pw", regx: regx.pw},
+        {field: "name", regx: regx.name},
+        {field: "gender", regx: regx.gender},
+        {field: "birthday", regx: regx.birthday},
+        {field: "phone", regx: regx.phone},
+        {field: "email", regx: regx.email},
+        {field: "nation", regx: regx.nation},
+    ]),
     wrapper(async (req,res)=>{
 
     //const userId = req.session.userid;

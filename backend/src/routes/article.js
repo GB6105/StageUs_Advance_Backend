@@ -29,9 +29,11 @@ router.get("",
 router.post("",
     loginGuard,
     banGuard,
-    validater("title",regx.title),
-    validater("category",regx.category),
-    validater("content",regx.content),
+    validater([
+        {field: "title", regx: regx.title},
+        {field: "category", regx: regx.category},
+        {field: "content", regx: regx.content},
+    ]),
     wrapper(async (req,res)=>{
     const {title, category, content} = req.body;
     // const userid = req.session.userid;
@@ -108,9 +110,11 @@ router.get("/:idx",
 router.patch("/:idx",
     loginGuard,
     banGuard,
-    validater("title",regx.title),
-    validater("category",regx.category),
-    validater("content",regx.content),
+    validater([
+        {field: "title", regx: regx.title},
+        {field: "category", regx: regx.category},
+        {field: "content", regx: regx.content},
+    ]),
     articleNotfoundMiddleware,
     wrapper(async (req,res)=>{
     // const userid = req.session.userid

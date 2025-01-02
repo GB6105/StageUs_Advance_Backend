@@ -128,7 +128,9 @@ router.get("",
 router.post("",
     loginGuard,
     banGuard, 
-    validater("content",regx.content),
+    validater([
+        {field: "content", regx: regx.content},
+    ]),
     wrapper(async (req,res)=>{
     const {articleIdx,content} = req.body;
     const findPage = await psql.query("SELECT * FROM article.list WHERE idx = $1",[articleIdx])
