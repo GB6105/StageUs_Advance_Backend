@@ -141,57 +141,62 @@
 
 // module.exports = loggingMiddleware;
 
+// const wrapper = require("../utils/wrapper");
+// const mongodb = require("../constants/mongodb");
+
+// const loggingMiddleware = wrapper(async (req, res, next) => {
+//     res.on("finish", async () => {
+//         // const client = await mongodb.connect(); // mongodb.js의 반환값 호출
+//         // await client.db("board_lob").collection("log").insertOne({
+//         //     method: req.method,
+//         //     entryPoint: req.url,
+//         //     hostname: req.hostname,
+//         //     userId: req.session.userid,
+//         //     statusCode: res.statusCode,
+//         //     timestamp: new Date(), // 타임스탬프 추가
+//         // });
+
+//         await mongodb.db("board_lob").collection("log").insertOne({
+//             method: req.method,
+//             entryPoint: req.url,
+//             hostname: req.hostname,
+//             userId: req.session.userid,
+//             statusCode: res.statusCode,
+//             timestamp: new Date(), // 타임스탬프 추가
+//         });
+
+//         console.log("The response has been sent");
+//     });
+//     next();
+// });
+
+// module.exports = loggingMiddleware;
+
 const wrapper = require("../utils/wrapper");
 const mongodb = require("../constants/mongodb");
+const jwt = require("jsonwebtoken")
+
+
 
 const loggingMiddleware = wrapper(async (req, res, next) => {
+    //const {token} = req.headers;
+    //req.decoded = jwt.verify(token,process.env.JWT_SIGNATURE_KEY)
     res.on("finish", async () => {
-        // const client = await mongodb.connect(); // mongodb.js의 반환값 호출
-        // await client.db("board_lob").collection("log").insertOne({
-        //     method: req.method,
-        //     entryPoint: req.url,
-        //     hostname: req.hostname,
-        //     userId: req.session.userid,
-        //     statusCode: res.statusCode,
-        //     timestamp: new Date(), // 타임스탬프 추가
-        // });
-        console.log("The response has been sent");
+        const client = await mongodb;
+        const db = client.db("board_log");
+
+        await db.collection("log").insertOne({
+            method: req.method,
+            entryPoint: req.url,
+            hostname: req.hostname,
+            //userId: req.decoded.userId,
+            statusCode: res.statusCode,
+            timestamp: new Date(),
+        });
+
+        console.log("The response has been sent1");
     });
     next();
 });
 
 module.exports = loggingMiddleware;
-
-// const wrapper = require("../utils/wrapper");
-// const { connectDB } = require("../constants/mongodb");
-
-// const loggingMiddleware = wrapper(async (req, res, next) => {
-//     let db;
-//     try {
-//         db = await connectDB(); // DB 연결
-//         console.log(db)
-//     } catch (error) {
-//         console.error("DB 연결 오류:", error);
-//         return next(error); // 오류 발생 시 다음 미들웨어로 전달
-//     }
-
-//     res.on("finish", async () => {
-//         try {
-//             console.log("The response has been sent");
-//             await db.collection("log").insertOne({
-//                 method: req.method,
-//                 entryPoint: req.url,
-//                 hostname: req.hostname,
-//                 userId: req.session?.userid || "unknown", // 세션이 없는 경우 "unknown" 처리
-//                 statusCode: res.statusCode,
-//                 timestamp: new Date(), // 타임스탬프 추가
-//             });
-//         } catch (error) {
-//             console.error("MongoDB 로그 저장 실패:", error);
-//         }
-//     });
-
-//     next();
-// });
-
-// module.exports = loggingMiddleware;

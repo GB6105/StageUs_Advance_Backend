@@ -2,22 +2,20 @@ const router = require("express").Router()
 const wrapper = require("../utils/wrapper")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
-const { connectToDatabase } = require("../constants/mongodb");
+const mongodb  = require("../constants/mongodb");
 
 
 router.get("", wrapper(async (req, res) => {
-    const db = await connectToDatabase();
+    const db = await mongodb();
     const { id, start_time, end_time, oldest } = req.body;
 
     // 기본 MongoDB 쿼리 객체
     const query = {};
 
-    // 분기 1: ID 조건 추가
     if (id) {
         query.id = id;
     }
 
-    // 분기 2: 시간 범위 조건 추가
     if (start_time && end_time) {
         query.timestamp = {
             $gte: new Date(start_time),
@@ -25,18 +23,14 @@ router.get("", wrapper(async (req, res) => {
         };
     }
 
-    // 기본 정렬 기준: 최신순 (내림차순)
     let sortOption = { timestamp: -1 };
 
-    // 분기 3: `oldest` 조건 추가 (오름차순)
     if (oldest === "T") {
         sortOption = { timestamp: 1 };
     }
 
-    // MongoDB에서 데이터 조회
     const logList = await db.collection("log").find(query).sort(sortOption).toArray();
 
-    // 결과 반환
     res.status(200).send({
         data: logList
     });
