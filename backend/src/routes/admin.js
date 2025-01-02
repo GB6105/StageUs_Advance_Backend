@@ -6,24 +6,35 @@ const loginGuard = require("../middlewares/loginGuard")
 const authGuard = require("../middlewares/authGuard")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
+const { user } = require("pg/lib/defaults")
 
 // 사용자 권한 변경 (관리자만 가능)
 router.patch("/ban",loginGuard, authGuard, validater("id",regx.id), wrapper(async (req,res)=>{
     const {id} = req.body;
-    const userBanResult = await psql.query("UPDATE account.list SET role = 'banned' WHERE id = $1",[id])
+    const userBanResult = await psql.query("UPDATE account.isbanned SET ban = 'T' WHERE account_id = $1 AND ban = 'F'",[id])
+    console.log(userBanResult);
     if(userBanResult.rowCount > 0){
         res.status(200).send({
             "message": "해당 사용자 권한을 변경하였습니다."
+        })
+    }else{
+        res.status(409).send({
+            "message": "이미 정지된 사용자입니다."
         })
     }
 }))
 
 router.patch("/unban",loginGuard, authGuard, validater("id",regx.id), wrapper(async (req,res)=>{
     const {id} = req.body;
-    const userUnBanResult = await psql.query("UPDATE account.list SET role = 'user' WHERE id = $1",[id])
+    const userUnBanResult = await psql.query("UPDATE account.isbanned SET ban = 'F' WHERE account_id = $1 AND ban = 'T'",[id])
+    console.log(userUnBanResult);
     if(userUnBanResult.rowCount > 0){
         res.status(200).send({
             "message": "해당 사용자 권한을 변경하였습니다."
+        })
+    }else{
+        res.status(409).send({
+            "message": "이미 활성화된 사용자입니다."
         })
     }
 }))

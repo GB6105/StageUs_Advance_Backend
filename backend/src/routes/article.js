@@ -18,6 +18,10 @@ router.get("",
         res.status(200).send({
             "article_list": articleList.rows[0]
         })
+    }else{
+        res.status(404).send({
+            "message": "아직 게시글이 없습니다."
+        })
     }
 }))
 

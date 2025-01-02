@@ -14,7 +14,7 @@ const {commentNotfoundMiddleware} = require("../middlewares/errorhandler")
 //댓글 좋아요 해제하기
 router.delete("/:idx/like",
     loginGuard,
-    authGuard,
+    banGuard,
     commentNotfoundMiddleware,
     wrapper(async (req,res)=>{
     const commentIdx = req.params.idx;
@@ -36,14 +36,14 @@ router.delete("/:idx/like",
 //댓글 좋아요 추가하기
 router.post("/:idx/like",
     loginGuard,
-    authGuard,
+    banGuard,
     commentNotfoundMiddleware,
     wrapper(async (req,res)=>{
     const commentIdx = req.params.idx;
     // const userid = req.session.userid;
     const {userId} = req.decoded;
 
-    const likeAdd = await psql.query("INSERT INTO comment.like (comment_idx, account_id) VALUES ($1, $2)",[commentIdx, userId])
+    const likeAdd = await psql.query("INSERT INTO comment.like (comment_idx, account_id) VALUES ($1, $2) ON CONFLICT (comment_idx, account_id) DO NOTHING",[commentIdx, userId])
     if(likeAdd.rowCount > 0){
         res.status(200).send({
             "message": "해당 댓글을 좋아요에 추가하였습니다."
@@ -58,7 +58,7 @@ router.post("/:idx/like",
 //댓글 수정하기
 router.patch("/:idx",
     loginGuard,
-    authGuard,
+    banGuard,
     wrapper(async (req,res)=>{
     //const userid = req.session.userid;
     const {userId} = req.decoded;
@@ -81,7 +81,7 @@ router.patch("/:idx",
 //댓글 삭제하기
 router.delete("/:idx",
     loginGuard,
-    authGuard,
+    banGuard,
     wrapper(async (req,res)=>{
     //const userid = req.session.userid;
     const {userId} = req.decoded;

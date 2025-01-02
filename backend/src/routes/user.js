@@ -148,6 +148,7 @@ router.put("/my",
     
     const {userId} = req.decoded;
     const userInfoEdit = await psql.query("UPDATE account.list SET id = $1 , pw = $2, name = $3, gender = $4, birthday = $5, phone = $6, email = $7, nation = $8 WHERE id = $9",[id, pw, name, gender, birthday, phone, email, nation, userId])
+    //const userInfoEdit = await psql.query("UPDATE account.list SET pw = $1, name = $2, gender = $3, birthday = $4, phone = $5, email = $6, nation = $7 WHERE id = $8",[pw, name, gender, birthday, phone, email, nation, userId])
 
     if(userInfoEdit.rowCount > 0){
         res.status(200).send({
@@ -161,6 +162,7 @@ router.delete("/my",loginGuard, wrapper(async (req,res)=>{
     //const userId = req.session.userid;
     const {userId} = req.decoded;
     console.log(userId);
+    const userbantableDelete = await psql.query("DELETE FROM account.isbanned WHERE account_id = $1",[userId])
     const userDeleteResult = await psql.query("DELETE FROM account.list WHERE id = $1",[userId]).catch(err=>{
         console.error(err.message);
         throw err;
