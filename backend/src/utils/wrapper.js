@@ -7,14 +7,15 @@ const wrapper = (func) => {
             // eventEmitter.emit("log","라우터 실행 후",req,res)
             // console.log(res,"실행 후")
         }catch(err){
-            if(process.env.MODE === "dev"){
-                // eventEmitter.emit("error",req,res,err)
-                console.log(err.message)
-                console.log(err.stack)
-            }
-            res.status(err.statusCode || 500).send({
-                "message":err.message
-            })
+            // if(process.env.MODE === "dev"){
+            //     // eventEmitter.emit("error",req,res,err)
+            //     console.log(err.message)
+            //     console.log(err.stack)
+            // }
+            // res.status(err.statusCode || 500).send({
+            //     "message":err.message
+            // })
+            next(err);
         }
     }
 }

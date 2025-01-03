@@ -4,11 +4,11 @@ const wrapper = require("../utils/wrapper")
 
 const notfoundhandler = (req,res,next)=>{
     res.status(404).send({
-        "message": "404 Not Found"
+        "message": "404 API Not Found "
     })
 }
 
-const errorhandler = (err,req,res,next)=>{
+const errorhandler = (err, req, res,next)=>{
     console.error(err.message)
     console.error(err.stack)
     res.status(err.statusCode || 500).send({

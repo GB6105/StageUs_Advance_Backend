@@ -3,7 +3,7 @@ const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 const jwt = require("jsonwebtoken")
 
-const authGuard = wrapper((req,res,next)=>{
+const authGuard = wrapper((req,res,next)=>{ // 이름을 admim으로 바꾸던가 권한에 대해서 
     // const role = req.session.userRole;
     const {userRole} = req.decoded
     console.log(userRole)
