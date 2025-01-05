@@ -1,20 +1,22 @@
 const router = require("express").Router()
-const customError = require("../utils/customError")
+//const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
-const authGuard = require("../middlewares/authGuard")
+//const authGuard = require("../middlewares/authGuard")
 const banGuard = require("../middlewares/banGuard")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
-const {articleNotfoundMiddleware} = require("../middlewares/errorhandler")
+const articleNotfoundMiddleware = require("../utils/articleFind")
 
 // 게시글 목록 불러오기 API
 router.get("",
     loginGuard,
     wrapper(async (req,res)=>{
-    const articleList = await psql.query("SELECT title, user_id FROM article.list")
+    const articleList = await psql.query("SELECT title, writer_id FROM article.list")
     if(articleList.rows.length>0){
+        res.resValue = articleList;
+        console.log(res.resValue);
         res.status(200).send({
             "article_list": articleList.rows[0]
         })

@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const customError = require("../utils/customError")
+//const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
@@ -9,9 +9,12 @@ const psql = require("../constants/psql")
 const { user } = require("pg/lib/defaults")
 
 // 사용자 권한 변경 (관리자만 가능)
-router.patch("/ban",loginGuard, authGuard, validater("id",regx.id), wrapper(async (req,res)=>{
+router.patch("/userBan",
+    loginGuard,
+    authGuard,
+    validater("id",regx.id), wrapper(async (req,res)=>{
     const {id} = req.body;
-    const userBanResult = await psql.query("UPDATE account.isbanned SET ban = 'T' WHERE account_id = $1 AND ban = 'F'",[id])
+    const userBanResult = await psql.query("UPDATE account.list SET isbanned = 'T' WHERE id = $1 AND isbanned = 'F'",[id])
     console.log(userBanResult);
     if(userBanResult.rowCount > 0){
         res.status(200).send({
@@ -24,9 +27,12 @@ router.patch("/ban",loginGuard, authGuard, validater("id",regx.id), wrapper(asyn
     }
 }))
 
-router.patch("/unban",loginGuard, authGuard, validater("id",regx.id), wrapper(async (req,res)=>{
+router.patch("/userUnban",
+    loginGuard, 
+    authGuard, 
+    validater("id",regx.id), wrapper(async (req,res)=>{
     const {id} = req.body;
-    const userUnBanResult = await psql.query("UPDATE account.isbanned SET ban = 'F' WHERE account_id = $1 AND ban = 'T'",[id])
+    const userUnBanResult = await psql.query("UPDATE account.list SET isbanned = 'F' WHERE id = $1 AND isbanned = 'T'",[id])
     console.log(userUnBanResult);
     if(userUnBanResult.rowCount > 0){
         res.status(200).send({
@@ -40,7 +46,7 @@ router.patch("/unban",loginGuard, authGuard, validater("id",regx.id), wrapper(as
 }))
 
 // 사용자 목록 불러오기 (관리자만 가능)
-router.get("", loginGuard, authGuard, wrapper(async (req,res)=>{
+router.get("/userlist", loginGuard, authGuard, wrapper(async (req,res)=>{
     const userList = await psql.query("SELECT * FROM account.list")
     if(userList.rows.length > 0){
         res.status(200).send({
@@ -48,5 +54,38 @@ router.get("", loginGuard, authGuard, wrapper(async (req,res)=>{
         })
     }
 }))
+
+// 로그 확인 API
+router.get("/logList", wrapper(async (req, res) => {
+    const db = await mongodb();
+    const { id, start_time, end_time, oldest } = req.body;
+
+    // 기본 MongoDB 쿼리 객체
+    const query = {};
+
+    if (id) {
+        query.id = id;
+    }
+
+    if (start_time && end_time) {
+        query.timestamp = {
+            $gte: new Date(start_time),
+            $lte: new Date(end_time)
+        };
+    }
+
+    let sortOption = { timestamp: -1 };
+
+    if (oldest === "T") {
+        sortOption = { timestamp: 1 };
+    }
+
+    const logList = await db.collection("log").find(query).sort(sortOption).toArray();
+
+    res.status(200).send({
+        data: logList
+    });
+}));
+
 
 module.exports = router;

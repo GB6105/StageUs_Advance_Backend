@@ -1,9 +1,9 @@
 const router = require("express").Router()
-const customError = require("../utils/customError")
+//const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")                          
 const validater = require("../middlewares/validater")
 const loginGuard = require("../middlewares/loginGuard")
-const authGuard = require("../middlewares/authGuard")
+//const authGuard = require("../middlewares/authGuard")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 const jwt = require("jsonwebtoken")
@@ -23,9 +23,16 @@ router.post("",
     wrapper(async (req,res)=>{
         const {id, pw, name, gender, birthday, phone, email, nation} = req.body;
 
-        const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation])
+        const signUpResult = await psql.query('INSERT INTO account.list (id, pw, name, gender, birthday, phone, email, nation) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',[id,pw,name,gender,birthday,phone, email, nation]).catch(err =>{
+            console.error("query failed");
+            throw err;
+        })
+        // req.resValue = signUpResult;
+        res.resValue = {
+            data : signUpResult.rows,
+            field : signUpResult.field
+        }
         if(signUpResult.rowCount > 0){
-            const banTable = await psql.query('INSERT INTO account.isBanned (account_id, ban) VALUES($1, $2)',[id,"F"])
             res.status(200).send({
                 "message": "회원가입에 성공하였습니다."
             })
@@ -44,12 +51,16 @@ router.get("",
     // console.log(req.method)
     // console.log(req.url)
     const {id, pw} = req.body;
-    const loginResult = await psql.query('SELECT * FROM account.list WHERE id = $1 AND pw = $2',[id,pw]).catch(err =>{
-        console.error("query failed");
-        throw err;
-    })
-    console.log("로그인 계정 권한:",loginResult.rows[0].role);
+    const loginResult = await psql.query('SELECT * FROM account.list WHERE id = $1 AND pw = $2',[id,pw])
+    // req.resValue = loginResult;
     if(loginResult.rows.length > 0){
+        console.log(loginResult.rows[0])
+        console.log("로그인 계정 권한:",loginResult.rows[0].role);
+        res.resValue = {
+            data : loginResult.rows,
+            field : loginResult.field
+        }
+        console.log(res.resValue);
         //
         //req.session.userid = id;
         //req.session.userRole = loginResult.rows[0].role
@@ -140,7 +151,11 @@ router.get("/my",
     const {userId} = req.decoded;
     console.log(userId)
     const userInfo = await psql.query("SELECT * FROM account.list WHERE id = $1",[userId])
-    
+    res.resValue = {
+        data : userInfo.rows,
+        field : userInfo.field
+    }
+    console.log(res.resValue);
     res.status(200).send({
         "userInfo":userInfo.rows[0] 
     })
@@ -177,11 +192,13 @@ router.put("/my",
 }))
                 
 // 사용자 정보 삭제 (회원탈퇴)
-router.delete("/my",loginGuard, wrapper(async (req,res)=>{
+router.delete("/my",
+    loginGuard,
+    wrapper(async (req,res)=>{
     //const userId = req.session.userid;
     const {userId} = req.decoded;
+
     console.log(userId);
-    const userbantableDelete = await psql.query("DELETE FROM account.isbanned WHERE account_id = $1",[userId])
     const userDeleteResult = await psql.query("DELETE FROM account.list WHERE id = $1",[userId]).catch(err=>{
         console.error(err.message);
         throw err;

@@ -1,7 +1,8 @@
 const express = require("express");
 const session = require("express-session");
 const app = express();
-const {errorhandler,notfoundhandler} = require("./src/middlewares/errorhandler");
+const errorhandler = require("./src/utils/errorhandler");
+const notfoundhandler = require("./src/utils/notFoundHandler")
 const loggingMiddleware = require("./src/middlewares/logger");
 
 
