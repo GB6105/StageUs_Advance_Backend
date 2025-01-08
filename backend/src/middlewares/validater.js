@@ -19,6 +19,7 @@ const wrapper = require("../utils/wrapper");
 
 const validater = (fields) => {
     return wrapper((req, res, next) => {
+        console.log(req.body);
         for (const {field, regx} of fields){
             const inputValue = req.body[field] || req.query[field] || req.params[field]; // params로 수정
             console.log(`입력값 검사 ${field}: ${inputValue}`);

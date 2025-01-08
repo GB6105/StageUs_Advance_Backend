@@ -9,7 +9,7 @@ const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 const articleNotfoundMiddleware = require("../utils/articleFind")
 
-// const {upload, upload2} = require("../middlewares/multer")
+const {upload, upload2} = require("../middlewares/multer")
 
 // 게시글 목록 불러오기 API
 router.get("",
@@ -53,13 +53,13 @@ router.post("",
 
 //이미지 넣어서 업로드 하기 
 // router.post("/upload",
-//     // loginGuard,
-//     // banGuard,
-//     // validater([
-//     //     {field: "title", regx: regx.title},
-//     //     {field: "category", regx: regx.category},
-//     //     {field: "content", regx: regx.content},
-//     // ]),
+//     loginGuard,
+//     banGuard,
+//     validater([
+//         {field: "title", regx: regx.title},
+//         {field: "category", regx: regx.category},
+//         {field: "content", regx: regx.content},
+//     ]),
 //     upload.single('image'),
 //     wrapper(async (req,res)=>{
 
@@ -68,6 +68,30 @@ router.post("",
 
 //     })
 // )
+
+router.post("/upload",
+    // loginGuard,
+    // banGuard,
+    upload.single('image'),
+    validater([
+        {field: "title", regx: regx.title},
+        {field: "category", regx: regx.category},
+        {field: "content", regx: regx.content},
+    ]),
+    wrapper(async (req,res)=>{
+    const {title, category, content} = req.body;
+    console.log(req.file);
+    console.log(req.body);
+    res.status(200).send({
+        "url": req.file.location,
+        "title" : title,    
+        "category" : category,
+        "content": content
+    })
+    
+}))
+
+
 
 // 게시글 좋아요 해제
 router.delete("/:idx/like",
