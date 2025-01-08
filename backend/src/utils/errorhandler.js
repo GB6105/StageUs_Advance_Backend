@@ -1,11 +1,13 @@
 const errorhandler = (err,req,res,next)=>{
-    console.error(err.message)
-    console.error(err.stack)
+    if(process.env.MODE == "dev"){
+        console.error(err.message)
+        console.error(err.stack)
+    }
+    res.resValue = err.stack;
     res.status(err.statusCode || 500).send({
         "message": err.message
     })
 }
 
-
 module.exports = errorhandler;
-
+//final 20250108

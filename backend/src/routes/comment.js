@@ -8,7 +8,7 @@ const banGuard = require("../middlewares/banGuard")
 
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
-const {commentNotfoundMiddleware} = require("../middlewares/errorhandler")
+const commentNotfoundMiddleware = require("../utils/commentFind")
 
 
 //댓글 좋아요 해제하기
@@ -153,3 +153,4 @@ router.post("",
 
 
 module.exports = router;
+//final 20250108

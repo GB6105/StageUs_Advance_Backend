@@ -11,3 +11,5 @@ const authGuard = wrapper((req,res,next)=>{ // 이름을 admim으로 바꾸던�
     next()
 })
 module.exports = authGuard
+
+//final 20250108

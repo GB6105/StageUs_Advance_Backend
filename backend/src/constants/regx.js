@@ -12,3 +12,4 @@ export const content = /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&\s]{2,}$/ // 영어, �
 export const role = /^(admin|user|banned)$/ // 지정된 권한
 export const ban = /^(T|F)&/ // 상태 정지 T F
 
+//final 20250108

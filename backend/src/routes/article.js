@@ -9,6 +9,8 @@ const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 const articleNotfoundMiddleware = require("../utils/articleFind")
 
+// const {upload, upload2} = require("../middlewares/multer")
+
 // 게시글 목록 불러오기 API
 router.get("",
     loginGuard,
@@ -48,6 +50,24 @@ router.post("",
         })
     }
 }))
+
+//이미지 넣어서 업로드 하기 
+// router.post("/upload",
+//     // loginGuard,
+//     // banGuard,
+//     // validater([
+//     //     {field: "title", regx: regx.title},
+//     //     {field: "category", regx: regx.category},
+//     //     {field: "content", regx: regx.content},
+//     // ]),
+//     upload.single('image'),
+//     wrapper(async (req,res)=>{
+
+//     console.log(req.file,req.body);
+//     res.json({url:req.file.location})
+
+//     })
+// )
 
 // 게시글 좋아요 해제
 router.delete("/:idx/like",
@@ -102,6 +122,7 @@ router.get("/:idx",
     const articleIdx = req.params.idx;
     const getArticle = await psql.query("SELECT * FROM article.list WHERE idx = $1",[articleIdx])
     if(getArticle.rows.length > 0){
+
         res.status(200).send({
             "article" : getArticle.rows[0]
         })
@@ -159,3 +180,4 @@ router.delete("/:idx",
 }))
 
 module.exports = router;
+//final 20250108

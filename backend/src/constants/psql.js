@@ -15,7 +15,6 @@ const connectToDB = wrapper(async () => {
     client.release(); // Release the client after successful connection
 });
 
-// Call the async connection function
 connectToDB();
-
+//final 20250108
 module.exports = psql;
