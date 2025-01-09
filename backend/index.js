@@ -4,9 +4,9 @@ const app = express();
 const errorhandler = require("./src/utils/errorhandler");
 const notfoundhandler = require("./src/utils/notFoundHandler")
 const loggingMiddleware = require("./src/middlewares/logger");
-
-
 require("dotenv").config();
+const path = require('path');
+const https = require("https");
 
 app.use(express.json());
 app.use(session({
@@ -16,6 +16,9 @@ app.use(session({
     secure: false, //찾아보기
     maxAge: 24* 60 * 60 // 24시간 
 }))
+
+app.use(express.static(path.join(__dirname, '/public')));
+
 
 app.use("/", loggingMiddleware);
 

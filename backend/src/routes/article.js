@@ -8,9 +8,9 @@ const banGuard = require("../middlewares/banGuard")
 const regx = require('../constants/regx')
 const psql = require("../constants/psql")
 const articleNotfoundMiddleware = require("../utils/articleFind")
-
-const {upload, upload2} = require("../middlewares/multer")
-
+const {S3Client, PutObjectCommand, S3ServiceException} = require("@aws-sdk/client-s3")
+const {upload, upload2, upload3} = require("../middlewares/multer")
+const s3 = require("../constants/S3config")
 // 게시글 목록 불러오기 API
 router.get("",
     loginGuard,
@@ -52,23 +52,7 @@ router.post("",
 }))
 
 //이미지 넣어서 업로드 하기 
-// router.post("/upload",
-//     loginGuard,
-//     banGuard,
-//     validater([
-//         {field: "title", regx: regx.title},
-//         {field: "category", regx: regx.category},
-//         {field: "content", regx: regx.content},
-//     ]),
-//     upload.single('image'),
-//     wrapper(async (req,res)=>{
-
-//     console.log(req.file,req.body);
-//     res.json({url:req.file.location})
-
-//     })
-// )
-
+// 기존 sdk(v2)와 multer를 이용해서 파일을 업로드하는 방식으로 작성한 라우터
 router.post("/upload",
     // loginGuard,
     // banGuard,
@@ -91,7 +75,52 @@ router.post("/upload",
     
 }))
 
+// 신버전 sdk(v3)를 이용해서 multer 없이 파일을 업로드하는 방식으로 작성한 라우터
+// 이 경우 multer를 사용하지 않음 -> multipart/form-data를 사용하지 않음
+// -> 이미지를 첨부할 경우 base64로 인코딩된 string을 받아야함
+// -> 업로드 단계에서 전처리를 해줘야함
+//과 같이 변경된다.
+router.post("/uploadv3",
+    wrapper(async (req,res)=> {
+    const {file, filename, contentType} = req.body;
 
+    const buffer = Buffer.from(file,'base64');
+    const command = new PutObjectCommand({
+        Bucket : 'gbsbucket',
+        Key : filename,//key 속성은 업로드하는 파일이 어떤 이름으로 버킷에 저장되는가에 대한 속성
+        Body : buffer,
+        ContentType : contentType
+    })
+
+    await s3.send(command);
+
+    res.send({
+        "message": "200 success",
+        "filekey" : filename
+    })
+}))
+
+
+// 이미지 업로드를 EBS를 사용함
+router.post("/uploadEC2",
+    upload3.single('image'),
+    validater([
+        {field: "title", regx: regx.title},
+        {field: "category", regx: regx.category},
+        {field: "content", regx: regx.content},
+    ]),
+    wrapper(async(req,res)=>{
+    const {title, category, content} = req.body;
+    console.log(req.file);
+    console.log(req.body);
+    res.status(200).send({
+        "message" :"uploaded",
+        "title" : title,    
+        "category" : category,
+        "content": content
+    })
+    
+}))
 
 // 게시글 좋아요 해제
 router.delete("/:idx/like",

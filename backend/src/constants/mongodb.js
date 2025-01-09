@@ -11,6 +11,7 @@ const mongodb = (async () => {
         console.log("|============= MongoDB 연결 성공 ============|");
     }
     return connection;
-})();
+})
+// mongodb();
 
 module.exports = mongodb;

@@ -41,24 +41,24 @@ const jwt = require("jsonwebtoken")
 const loggingMiddleware = wrapper(async (req, res, next) => {
     //const {token} = req.headers;
     //req.decoded = jwt.verify(token,process.env.JWT_SIGNATURE_KEY)
-    res.on("finish", async () => {
-        const client = await mongodb;
-        const db = client.db("board_log");
+    // res.on("finish", async () => {
+    //     const client = await mongodb;
+    //     const db = client.db("board_log");
 
-        await db.collection("log").insertOne({
-            entryPoint: req.url,
-            originalURL : req.originalURL,
-            method: req.method,
-            hostname: req.hostname,
-            request: req.body||req.params||req.query,
-            //userId: req.decoded.userId,
-            response_statusCode: res.statusCode,
-            response : res.resValue,
-            timestamp: new Date(),
-        });
+    //     await db.collection("log").insertOne({
+    //         entryPoint: req.url,
+    //         originalURL : req.originalURL,
+    //         method: req.method,
+    //         hostname: req.hostname,
+    //         request: req.body||req.params||req.query,
+    //         //userId: req.decoded.userId,
+    //         response_statusCode: res.statusCode,
+    //         response : res.resValue,
+    //         timestamp: new Date(),
+    //     });
 
-        console.log("The response has been sent1");
-    });
+    //     console.log("The response has been sent1");
+    // });
     next();
 });
 
