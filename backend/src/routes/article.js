@@ -53,8 +53,42 @@ router.post("",
 
 //이미지 넣어서 업로드 하기 
 // 기존 sdk(v2)와 multer를 이용해서 파일을 업로드하는 방식으로 작성한 라우터
+// router.post("/upload",
+//     loginGuard,
+//     // banGuard,
+//     upload.single('image'),
+//     validater([
+//         {field: "title", regx: regx.title},
+//         {field: "category", regx: regx.category},
+//         {field: "content", regx: regx.content},
+//     ]),
+//     wrapper(async (req,res)=>{
+//     const {title, category, content} = req.body;
+//     const {userId} = req.decoded;
+    
+//     let imageUrl = null;
+//     if(req.file){
+//         imageUrl = req.file.location;//multer s3에서 지원하는 s3 url
+//     }
+
+//     const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content) VALUES ($1,$2,$3,$4)",[userId,title,category,content])
+//     console.log(req.file);
+//     console.log(req.body);
+//     if(writeAritcle.rowCount > 0){
+//         res.status(200).send({
+//             // "url": req.file.location,
+//             "url": imageUrl,
+//             "title" : title,    
+//             "category" : category,
+//             "content": content
+//         })
+
+//     }
+// }))
+
+//라우터 수정 -> 파일 있을 때 없을 때 분기 나눠서 실행되도록
 router.post("/upload",
-    // loginGuard,
+    loginGuard,
     // banGuard,
     upload.single('image'),
     validater([
@@ -64,16 +98,33 @@ router.post("/upload",
     ]),
     wrapper(async (req,res)=>{
     const {title, category, content} = req.body;
+    const {userId} = req.decoded;
+    let articleUploadResult = null;
+    let imageUrl = null;
+
+    if(req.file){
+        imageUrl = req.file.location;//multer s3에서 지원하는 s3 url
+        console.log("이미지파일",imageUrl);
+        const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content,image_url) VALUES ($1,$2,$3,$4,$5)",[userId,title,category,content,imageUrl])
+        articleUploadResult = writeAritcle;
+    }else{
+        const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content) VALUES ($1,$2,$3,$4)",[userId,title,category,content])
+        articleUploadResult = writeAritcle;
+    }
     console.log(req.file);
     console.log(req.body);
-    res.status(200).send({
-        "url": req.file.location,
-        "title" : title,    
-        "category" : category,
-        "content": content
-    })
+    if(articleUploadResult.rowCount > 0){
+        res.status(200).send({
+            // "url": req.file.location,
+            "url": imageUrl,
+            "title" : title,    
+            "category" : category,
+            "content": content
+        })
+    }
     
 }))
+
 
 // 신버전 sdk(v3)를 이용해서 multer 없이 파일을 업로드하는 방식으로 작성한 라우터
 // 이 경우 multer를 사용하지 않음 -> multipart/form-data를 사용하지 않음
@@ -83,8 +134,8 @@ router.post("/upload",
 router.post("/uploadv3",
     wrapper(async (req,res)=> {
     const {file, filename, contentType} = req.body;
-
     const buffer = Buffer.from(file,'base64');
+
     const command = new PutObjectCommand({
         Bucket : 'gbsbucket',
         Key : filename,//key 속성은 업로드하는 파일이 어떤 이름으로 버킷에 저장되는가에 대한 속성
@@ -103,6 +154,7 @@ router.post("/uploadv3",
 
 // 이미지 업로드를 EBS를 사용함
 router.post("/uploadEC2",
+    loginGuard,
     upload3.single('image'),
     validater([
         {field: "title", regx: regx.title},
@@ -111,15 +163,25 @@ router.post("/uploadEC2",
     ]),
     wrapper(async(req,res)=>{
     const {title, category, content} = req.body;
+    const {userId} = req.decoded;
+    let imageUrl = null;
+
+    if(req.file){
+        imageUrl = req.file.filename;
+    }
+
+    const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content) VALUES ($1,$2,$3,$4)",[userId,title,category,content])
     console.log(req.file);
     console.log(req.body);
-    res.status(200).send({
-        "message" :"uploaded",
-        "title" : title,    
-        "category" : category,
-        "content": content
-    })
-    
+    if(writeAritcle.rowCount > 0){
+        res.status(200).send({
+            "message" : "uploaded",
+            "url": imageUrl,
+            "title" : title,    
+            "category" : category,
+            "content": content
+        })
+    }
 }))
 
 // 게시글 좋아요 해제
@@ -183,9 +245,37 @@ router.get("/:idx",
 }))
 
 //게시글 수정하기 API (벤 유저 금지) (본인 확인)
+// router.patch("/:idx",
+//     loginGuard,
+//     banGuard,
+//     validater([
+//         {field: "title", regx: regx.title},
+//         {field: "category", regx: regx.category},
+//         {field: "content", regx: regx.content},
+//     ]),
+//     articleNotfoundMiddleware,
+//     wrapper(async (req,res)=>{
+//     // const userid = req.session.userid
+//     const {userId} = req.decoded;
+//     const articleIdx = req.params.idx
+//     const {title, category, content} = req.body;
+    
+//     const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userId])
+//     if(articlePatch.rowCount > 0){
+//         res.status(200).send({
+//             "message": "게시글이 수정되었습니다."
+//         })
+//     }else{
+//         res.status(401).send({
+//             "message": "작성자만 수정할 수 있습니다."
+//         })
+//     }
+// }))
+
 router.patch("/:idx",
     loginGuard,
     banGuard,
+    upload.single('image'), //s3 멀터 기반으로 받아오는 미들웨어에 유의
     validater([
         {field: "title", regx: regx.title},
         {field: "category", regx: regx.category},
@@ -195,13 +285,30 @@ router.patch("/:idx",
     wrapper(async (req,res)=>{
     // const userid = req.session.userid
     const {userId} = req.decoded;
-
-    const articleIdx = req.params.idx
+    const articleIdx = req.params.idx;
     const {title, category, content} = req.body;
-    const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userId])
-    if(articlePatch.rowCount > 0){
+
+    let patchResult = null;
+    if(req.file){
+        let imageUrl = null;
+        imageUrl = req.file.location;
+        const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 , image_url = $4 WHERE idx = $5 AND writer_id = $6",[title, category, content, imageUrl, articleIdx,userId])
+        patchResult = articlePatch;
+    }else{
+        //if(image == null){
+           const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 , image_url = null WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userId])
+           patchResult = articlePatch
+        //}else{
+        //    const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userId])
+        //    patchResult = articlePatch
+        //}
+    }
+
+    if(patchResult.rowCount > 0){
+        const result = await psql.query('SELECT * FROM article.list WHERE idx = $1',[articleIdx])
         res.status(200).send({
-            "message": "게시글이 수정되었습니다."
+            "message": "게시글이 수정되었습니다.",
+            "data" : result.rows
         })
     }else{
         res.status(401).send({

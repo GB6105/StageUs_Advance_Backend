@@ -1,4 +1,3 @@
-const wrapper = require("../utils/wrapper")
 const { MongoClient } = require("mongodb");
 let connection = null;
 const mongodb = (async () => {

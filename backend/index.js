@@ -17,8 +17,7 @@ app.use(session({
     maxAge: 24* 60 * 60 // 24시간 
 }))
 
-app.use(express.static(path.join(__dirname, '/public')));
-
+app.use(express.static(path.join(__dirname, 'public')));
 
 app.use("/", loggingMiddleware);
 
