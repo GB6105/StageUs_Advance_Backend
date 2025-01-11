@@ -62,7 +62,7 @@ router.get("",
         //req.session.userRole = loginResult.rows[0].role
         
         //
-        const accessToken = jwt.sign({
+        const Token = jwt.sign({
             "userId" : id,
             "password" : pw,
             "userRole" : loginResult.rows[0].role
@@ -71,19 +71,10 @@ router.get("",
             "expiresIn" : "30m",
         })
         
-        const refreshToken = jwt.sign({
-            "userId":id,
-            "password" : pw,
-            "userRole" : loginResult.rows[0].role
-        },process.env.JWT_SIGNATURE_KEY,{
-            "issuer":"gb6105",
-            "expiresIn":"1M",
-        })
-
         res.status(200).send({
             "message": id + " 계정으로 로그인에 성공하였습니다.",
-            "accessToken" : accessToken,
-            "refreshToken" : refreshToken
+            "accessToken" : Token,
+            // "refreshToken" : refreshToken
         })
     }
     else{

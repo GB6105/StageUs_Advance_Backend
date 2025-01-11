@@ -6,6 +6,11 @@
     <title>Document</title>
 </head>
 <body>
+    <form id = "loginForm">
+        <input type="text" id="id" placeholder="ID" required>
+        <input type="password" id="pw" placeholder="Password" required>
+        <button type="submit">Login</button>
+    </form>
     <form id="uploadForm" enctype="multipart/form-data">
         <input type="text" name="title" placeholder="Title">
         <input type="text" name="category" placeholder="Category">
@@ -13,7 +18,7 @@
         <input type="file" name="imageList" multiple>
         <button type="button" onclick="submitForm()">Submit</button>
     </form>
-
+    <script src = "weblogin.js"></script>
     <script src="dataUpload.js"></script>
 </body>
 </html>

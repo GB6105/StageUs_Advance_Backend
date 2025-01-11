@@ -28,9 +28,14 @@
 
 async function uploadFiles(formData) {
     try {
+
+        const token = localStorage.getItem("jwt");
         const response = await fetch("http://3.38.114.206:8000/v2article", {
             method: "POST",
             mode: "cors",
+            headers: {
+                "Authorization": token, // 토큰 포함
+            },
             body: formData,
         });
 
