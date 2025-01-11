@@ -1,3 +1,6 @@
+/**예외처리를 위한 미들웨어 입니다.
+ * 에러가 발생하면 errorhandler로 이동합니다.
+ */
 const wrapper = (func) => {
     return async (req,res,next,...elem)=>{
         try{

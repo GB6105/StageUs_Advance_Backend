@@ -17,6 +17,7 @@ app.use(session({
     maxAge: 24* 60 * 60 // 24시간 
 }))
 
+
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use("/", loggingMiddleware);
@@ -26,6 +27,9 @@ app.use("/user",userRouter) // 가장 윗 계층
 
 const articleRouters = require("./src/routes/article")
 app.use("/article",articleRouters) // 가장 윗 계층 
+
+const articleRouter2 = require("./src/routes/articleV2")
+app.use("/v2article",articleRouter2)
 
 const commentRouters = require("./src/routes/comment")
 app.use("/comment",commentRouters)

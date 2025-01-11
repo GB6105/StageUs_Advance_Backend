@@ -244,7 +244,7 @@ router.get("/:idx",
     }
 }))
 
-//게시글 수정하기 API (벤 유저 금지) (본인 확인)
+//게시글 수정하기 API (벤 유저 금지) (본인 확인) (기존 버전)
 // router.patch("/:idx",
 //     loginGuard,
 //     banGuard,
@@ -272,6 +272,8 @@ router.get("/:idx",
 //     }
 // }))
 
+
+// 게시글 수정 라우터 (이미지 단일, 수정)
 router.patch("/:idx",
     loginGuard,
     banGuard,
@@ -286,22 +288,22 @@ router.patch("/:idx",
     // const userid = req.session.userid
     const {userId} = req.decoded;
     const articleIdx = req.params.idx;
-    const {title, category, content} = req.body;
+    const {title, category, content,image} = req.body;
 
     let patchResult = null;
+    let imageUrl = null;
     if(req.file){
-        let imageUrl = null;
         imageUrl = req.file.location;
         const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 , image_url = $4 WHERE idx = $5 AND writer_id = $6",[title, category, content, imageUrl, articleIdx,userId])
         patchResult = articlePatch;
     }else{
-        //if(image == null){
+        if(image == null){
            const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 , image_url = null WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userId])
            patchResult = articlePatch
-        //}else{
-        //    const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userId])
-        //    patchResult = articlePatch
-        //}
+        }else{
+           const articlePatch = await psql.query("UPDATE article.list SET title = $1, category_name = $2, content = $3 WHERE idx = $4 AND writer_id = $5",[title, category, content, articleIdx,userId])
+           patchResult = articlePatch
+        }
     }
 
     if(patchResult.rowCount > 0){

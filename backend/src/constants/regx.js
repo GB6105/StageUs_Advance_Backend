@@ -8,7 +8,7 @@ export const email = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[ a-zA-Z]{2,}$/
 export const nation = /^[A-Z][a-z]{1,}$/
 export const title = /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&\s]{2,40}$/ // 영어,한글,숫자,특수문자 가능 2-40글자
 export const category = /^(category1|category2|category3)$/ // 지정된 카테고리만 입력 가능
-export const content = /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&\s]{2,}$/ // 영어, 한글, 숫자, 특수문자 가능 2글자 이상 자유
+export const content = /^[a-zA-Zㄱ-ㅎ가-힣0-9$@$!%*?&'\s]{2,}$/ // 영어, 한글, 숫자, 특수문자 가능 2글자 이상 자유
 export const role = /^(admin|user|banned)$/ // 지정된 권한
 export const ban = /^(T|F)&/ // 상태 정지 T F
 

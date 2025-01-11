@@ -2,6 +2,7 @@ const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 const psql = require("../constants/psql")
 
+/** 해당 계정의 상태가 "정지"인지를 확인합니다.*/
 const banGuard = wrapper(async (req,res, next)=>{
     // const userid = req.session.userid;
     const {userId} = req.decoded;

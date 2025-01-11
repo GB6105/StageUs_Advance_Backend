@@ -2,6 +2,7 @@ const customError = require("../utils/customError")
 const wrapper = require("../utils/wrapper")
 const jwt = require("jsonwebtoken");
 
+/**로그인 여부를 확인합니다. 유저 정보가 담긴 토큰을 요구합니다. */
 const loginGuard = (req,res,next)=>{
     const {token} = req.headers
     try{

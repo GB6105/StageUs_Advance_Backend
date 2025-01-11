@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <form id="uploadForm" enctype="multipart/form-data">
+        <input type="text" name="title" placeholder="Title">
+        <input type="text" name="category" placeholder="Category">
+        <input type="text" name="content" placeholder="Content">
+        <input type="file" name="imageList" multiple>
+        <button type="button" onclick="submitForm()">Submit</button>
+    </form>
+
+    <script src="dataUpload.js"></script>
+</body>
+</html>
