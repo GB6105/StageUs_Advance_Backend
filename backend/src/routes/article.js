@@ -20,7 +20,7 @@ router.get("",
         res.resValue = articleList;
         console.log(res.resValue);
         res.status(200).send({
-            "article_list": articleList.rows[0]
+            "article_list": articleList.rows
         })
     }else{
         res.status(404).send({
@@ -164,24 +164,24 @@ router.post("/uploadEC2",
     wrapper(async(req,res)=>{
     const {title, category, content} = req.body;
     const {userId} = req.decoded;
-    let imageUrl = null;
+    const imageUrl = req.file || "";
+    
+    // if(req.file){
+    //     imageUrl = req.file.filename;
+    // }
 
-    if(req.file){
-        imageUrl = req.file.filename;
-    }
-
-    const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content) VALUES ($1,$2,$3,$4)",[userId,title,category,content])
+    const writeAritcle = await psql.query("INSERT INTO article.list (writer_id, title, category_name,content,image_url) VALUES ($1,$2,$3,$4,$5)",[userId,title,category,content,imageUrl])
     console.log(req.file);
     console.log(req.body);
-    if(writeAritcle.rowCount > 0){
-        res.status(200).send({
-            "message" : "uploaded",
-            "url": imageUrl,
-            "title" : title,    
-            "category" : category,
-            "content": content
-        })
-    }
+    // if(writeAritcle.rowCount > 0){
+    // }
+    res.status(200).send({
+        "message" : "uploaded",
+        "url": imageUrl,
+        "title" : title,    
+        "category" : category,
+        "content": content
+    })
 }))
 
 // 게시글 좋아요 해제
@@ -305,14 +305,14 @@ router.patch("/:idx",
            patchResult = articlePatch
         }
     }
-
-    if(patchResult.rowCount > 0){
+    
+    if(patchResult.rowCount > 0){ // 얘도 if 문 굳이 필요 없음
         const result = await psql.query('SELECT * FROM article.list WHERE idx = $1',[articleIdx])
         res.status(200).send({
             "message": "게시글이 수정되었습니다.",
             "data" : result.rows
         })
-    }else{
+    }else{ // 얘도 미들웨어로 뽑아주는게 좋다.
         res.status(401).send({
             "message": "작성자만 수정할 수 있습니다."
         })

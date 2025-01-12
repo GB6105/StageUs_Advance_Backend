@@ -9,7 +9,7 @@ const upload = multer({
         s3: s3,
         bucket: 'gbsbucket',
         // acl: "public-read",
-        acl: "private",
+        acl: "private", //기본값이 이거 내 EC2에서만 업로드가 가능한 옵션
         contentType: multerS3.AUTO_CONTENT_TYPE,    
         key(req,file,cb){
             cb(null,`image/${Date.now()}_${path.basename(file.originalname)}`)
