@@ -1,14 +1,26 @@
-const router = require("express").Router()
-//const customError = require("../utils/customError")
-const wrapper = require("../utils/wrapper")                          
-const validater = require("../middlewares/validater")
-const loginGuard = require("../middlewares/loginGuard")
-//const authGuard = require("../middlewares/authGuard")
-const regx = require('../constants/regx')
-const psql = require("../constants/psql")
-const jwt = require("jsonwebtoken")
+//==========================[ Import ]===============================//
+const router = require("express").Router();
 
-//회원 가입 API v3
+//constants
+const psql = require("../constants/psql");
+const regx = require("../constants/regx");
+const jwt = require("jsonwebtoken")
+//custom middleware
+// fileters
+const banGuard = require("../middlewares/banGuard");
+const loginGuard = require("../middlewares/loginGuard");
+const validater = require("../middlewares/validater");
+// error check
+const wrapper = require("../utils/wrapper");
+const articleFind = require("../utils/articleFind");
+// AWS (S3)
+const {upload, upload2, upload3} = require("../middlewares/multer");
+const s3 = require("../constants/S3config");
+
+//===========================[ Service ]==============================//
+
+
+//회원 가입 API
 router.post("", 
     validater([
         {field: "id", regx: regx.id},
@@ -31,11 +43,9 @@ router.post("",
             data : signUpResult.rows,
             field : signUpResult.field
         }
-        if(signUpResult.rowCount > 0){
-            res.status(200).send({
-                "message": "회원가입에 성공하였습니다."
-            })
-        }
+        res.status(200).send({
+            "message": "회원가입에 성공하였습니다."
+        })
     }
 ))
 
@@ -56,12 +66,6 @@ router.get("",
             data : loginResult.rows,
             field : loginResult.field
         }
-        // console.log(res.resValue);
-        //
-        //req.session.userid = id;
-        //req.session.userRole = loginResult.rows[0].role
-        
-        //
         const Token = jwt.sign({
             "userId" : id,
             "password" : pw,
@@ -84,7 +88,7 @@ router.get("",
     }
 }))
 
-// ID 찾기 v2
+// ID 찾기 
 router.get("/find-id",
     validater([
         {field: "name", regx: regx.name},
@@ -204,4 +208,5 @@ router.delete("/my",
 }))
 
 module.exports = router;
-//final 20250108
+//final 20250114
+

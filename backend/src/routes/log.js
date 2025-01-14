@@ -1,10 +1,17 @@
-const router = require("express").Router()
-const wrapper = require("../utils/wrapper")
-const regx = require('../constants/regx')
-const psql = require("../constants/psql")
+//==========================[ Import ]===============================//
+const router = require("express").Router();
+
+//constants
 const mongodb  = require("../constants/mongodb");
 
+//custom middleware
+const wrapper = require("../utils/wrapper");
 
+
+//===========================[ Service ]==============================//
+
+
+//로그 확인 API
 router.get("", wrapper(async (req, res) => {
     const db = await mongodb();
     const { id, start_time, end_time, oldest } = req.body;
@@ -38,4 +45,5 @@ router.get("", wrapper(async (req, res) => {
 
 
 module.exports = router
-//final 20250108
+//final 20250114
+

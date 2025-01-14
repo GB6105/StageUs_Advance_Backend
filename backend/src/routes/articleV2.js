@@ -18,7 +18,8 @@ const s3 = require("../constants/S3config");
 
 //===========================[ Service ]==============================//
 
-//게시글 불러오기 "GET: /article/"
+
+//게시글 불러오기 
 router.get("/:idx",
     loginGuard,
     banGuard,
@@ -31,10 +32,8 @@ router.get("/:idx",
         })
     }
 }));
-//게시글 작성하기 "POST: /article/"
 
-
-//게시글 수정하기 "PATCH: /article/"
+//게시글 수정하기 
 
 router.put("/:idx",
     upload.array('imageList'),
@@ -92,6 +91,7 @@ router.put("/:idx",
     
 }))
 
+//게시글 작성하기 
 router.post("",
     // loginGuard,
     // banGuard,
@@ -123,3 +123,4 @@ router.post("",
 }))
 
 module.exports = router;
+//final 20250114

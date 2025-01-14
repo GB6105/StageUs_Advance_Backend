@@ -1,21 +1,33 @@
+//==========================[ Import ]===============================//
 const router = require("express").Router()
-const customError = require("../utils/customError")
-const wrapper = require("../utils/wrapper")
-const validater = require("../middlewares/validater")
-const loginGuard = require("../middlewares/loginGuard")
-const authGuard = require("../middlewares/authGuard")
-const banGuard = require("../middlewares/banGuard")
 
-const regx = require('../constants/regx')
-const psql = require("../constants/psql")
-const commentNotfoundMiddleware = require("../utils/commentFind")
+//constants
+const psql = require("../constants/psql");
+const regx = require('../constants/regx');
+
+//custom middleware`
+const articleUpload = require("../utils/articleUpload")
+// fileters
+const banGuard = require("../middlewares/banGuard");
+const loginGuard = require("../middlewares/loginGuard");
+const validater = require("../middlewares/validater");
+// error check
+const wrapper = require("../utils/wrapper");
+const commentFind = require("../utils/commentFind")
+const customError = require("../utils/customError");
+// AWS (S3)
+const {upload, upload2, upload3} = require("../middlewares/multer")
+const {S3Client, PutObjectCommand, S3ServiceException} = require("@aws-sdk/client-s3")
+const s3 = require("../constants/S3config");
+
+//===========================[ Service ]==============================//
 
 
 //댓글 좋아요 해제하기
 router.delete("/:idx/like",
     loginGuard,
     banGuard,
-    commentNotfoundMiddleware,
+    commentFind,
     wrapper(async (req,res)=>{
     const commentIdx = req.params.idx;
     // const userid = req.session.userid;
@@ -37,7 +49,7 @@ router.delete("/:idx/like",
 router.post("/:idx/like",
     loginGuard,
     banGuard,
-    commentNotfoundMiddleware,
+    commentFind,
     wrapper(async (req,res)=>{
     const commentIdx = req.params.idx;
     // const userid = req.session.userid;
@@ -153,4 +165,5 @@ router.post("",
 
 
 module.exports = router;
-//final 20250108
+//final 20250114
+
